@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Violation Tagger v6.1 – Enhanced Editing</title>
+  <script src="hintLookup_GROUPED_DISPLAY.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #left-panel {
+      flex: 1;
+      padding: 20px;
+      background-color: #f7f9fc;
+      border-right: 1px solid #ccc;
+      box-sizing: border-box;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    #right-panel {
+      flex: 2;
+      padding: 20px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+    #image-container {
+      position: relative;
+      width: 810px;
+      height: 920px;
+      overflow: hidden;
+      border: 1px solid #ccc;
+      margin-top: 20px;
+      background-color: white;
+      cursor: crosshair;
+      user-select: none;
+      border-radius: 24px;
+    }
+    #report-img {
+      position: absolute;
+      width: 778px;
+      height: 1007px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 0;
+      pointer-events: none;
+    }
+    .draw-box {
+      position: absolute;
+      border: 2px dashed #333;
+      background-color: rgba(255, 0, 0, 0.1);
+      z-index: 10;
+      border-radius: 6px;
+      will-change: transform;
+      transition: all 0.1s ease;
+}
+
+
+    #tag-log {
+      overflow-anchor: none;
+}
+
+    .draw-box.selected {
+      border: 2px solid blue;
+      background-color: rgba(0, 0, 255, 0.1);
+      box-shadow: 0 0 0 2px rgba(0,0,255,0.5);
+    }
+
+
+
+    .draw-box.selected, .draw-box.multi-selected {
+      cursor: pointer;
+}
+
+
+
+    .draw-box.multi-selected {
+      border: 2px solid purple;
+      background-color: rgba(128, 0, 128, 0.1);
+      box-shadow: 0 0 0 2px rgba(128,0,128,0.5);
+    }
+    .resize-handle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: white;
+      border: 1px solid #333;
+      z-index: 20;
+    }
+    .resize-handle.top-left {
+      top: -4px;
+      left: -4px;
+      cursor: nwse-resize;
+    }
+    .resize-handle.top-right {
+      top: -4px;
+      right: -4px;
+      cursor: nesw-resize;
+    }
+    .resize-handle.bottom-left {
+      bottom: -4px;
+      left: -4px;
+      cursor: nesw-resize;
+    }
+    .resize-handle.bottom-right {
+      bottom: -4px;
+      right: -4px;
+      cursor: nwse-resize;
+    }
+
+
+
+.draw-box, .resize-handle {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+
+.draw-box.moving {
+  opacity: 0.9;
+  box-shadow: 0 0 0 2px rgba(0,200,0,0.5);
+}
+
+.resize-handle {
+  touch-action: none;
+}
+
+
+
+    #popup {
+      position: absolute;
+      z-index: 20;
+      background: white;
+      border: 1px solid #ccc;
+      padding: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      display: none;
+      width: 280px;
+    }
+    #sidebar-hints {
+      font-size: 15px;
+      line-height: 1.6;
+      padding: 15px;
+      background: #ffffff;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 10px;
+    }
+    #sidebar-hints ul {
+      padding-left: 18px;
+    }
+    #sidebar-hints li {
+      margin-bottom: 12px;
+    }
+    #meta-info {
+      font-size: 13px;
+      color: #444;
+      padding: 12px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    }
+    h3 {
+      font-size: 18px;
+      margin-top: 0;
+    }
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(0,0,0,.3);
+      border-radius: 50%;
+      border-top-color: #000;
+      animation: spin 1s ease-in-out infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .error-message {
+      color: #d9534f;
+      font-weight: bold;
+    }
+    .tag-entry {
+      margin-bottom: 5px;
+      padding: 5px;
+      background: #f8f9fa;
+      border-radius: 4px;
+    }
+    .tag-label {
+      font-weight: bold;
+    }
+    .tag-codes {
+      font-size: 12px;
+      color: #666;
+    }
+    .tag-position {
+      font-size: 11px;
+      color: #999;
+    }
+    .control-panel {
+      margin-bottom: 10px;
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+
+.file-input-button {
+  padding: 5px 10px;
+  cursor: pointer;
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  display: inline-block; /* Ensures proper button layout */
+  margin-right: 5px; /* Matches your existing button spacing */
+}
+
+.file-input-button:hover {
+  background: #e0e0e0; /* Optional hover effect */
+}
+
+  </style>
+</head>
+<body>
+
+<div id="left-panel">
+  <div>
+    <h3>🔍 What to Look For</h3>
+    <div id="sidebar-hints">Upload an image to see page-specific violations.</div>
+    <div id="meta-info">
+      <div id="meta-details"><strong>Creditor:</strong> — | <strong>Bureau:</strong> — | <strong>Date:</strong> — | <strong>Page:</strong> —</div>
+      <div id="creditor-name"><strong>Creditor Name:</strong> —</div>
+      <div id="severity-display"><strong>Severity:</strong> —</div>
+      <div id="file-name"><strong>Image loaded:</strong> —</div>
+    </div>
+    <div id="tag-log" style="margin-top: 10px;"></div>
+  </div>
+</div>
+
+<div id="right-panel">
+  <h2 style="margin-top: 0;">Violation Tagger v6.1 – Enhanced Editing</h2>
+ <div class="control-panel">
+  <label for="loadImage" class="file-input-button">📁 Load Image</label>
+  <input type="file" id="loadImage" accept="image/*" style="display: none">
+  <div class="control-panel">
+  <!-- Your existing buttons -->
+  <button id="exportCSV">📤 Export CSV</button>
+  <button id="toggleMultiSelect">🔘 Multi-Select</button>
+  <button id="deleteSelected">🗑️ Delete Selected</button>
+  <button id="saveProgress">💾 Save Progress</button>
+</div>
+  <div id="image-container">
+    <img id="report-img" src="" alt="Uploaded image will appear here">
+    <div id="drawing-guide" style="display: none; position: absolute; pointer-events: none; font-size: 12px; color: #666; background: rgba(255,255,255,0.8); padding: 2px 5px; border-radius: 3px;">Drawing box...</div>
+  </div>
+  <div id="popup">
+    <label><strong>Select Violation Type:</strong><br>
+      <select id="violationPreset" style="width: 100%; padding: 5px; font-size: 14px;">
+        <option value="" disabled selected>Select a violation</option>
+      </select>
+    </label><br><br>
+    <button id="saveTag">✅ Save Tag</button>
+    <button id="cancelTag">❌ Cancel</button>
+  </div>
+</div>
+
+<script>
+// Excel data mapping (simplified representation)
+const excelData = {
+  "AL-EQ-2024-04-25-P57.png": {
+    creditor: "Ally Financial",
+    pages: "57–58",
+    codes: "§1681c(f), §1681s-2(a)(1)(A), §1681e(b), §1681c(a)(4)",
+    severity: "🔴🔴🟠🟡"
+  },
+  "BY-EQ-2024-04-25-P34.png": {
+    creditor: "Barclays Bank",
+    pages: "34–35",
+    codes: "§1681c(f), §1681s-2(a)(1)(A), §1681e(b), §1681c(a)(4)",
+    severity: "🔴🔴🟠🟡"
+  },
+  "HD-TU-2024-04-25-P37.png": {
+    creditor: "THD / CBNA (Home Depot)",
+    pages: "37.0",
+    codes: "§1681c(f), §1681e(b)",
+    severity: "🔴🟠"
+  }
+};
+
+// Global variables
+let startX, startY, currentBox = null, imageName = '', tagData = [], currentHints = [];
+let selectedBox = null;
+let isMultiSelectMode = false;
+let isResizing = false;
+let resizeHandle = null;
+let dragStartX, dragStartY;
+let activeResizeBox = null; // 🆕 NEW - Add this line
+
+
+// Debug logging for initialization
+console.log('=== APPLICATION INITIALIZED ===');
+console.log('Global variables at startup:', {
+  startX: startX,
+  startY: startY,
+  currentBox: currentBox,
+  imageName: imageName,
+  tagData: tagData,
+  currentHints: currentHints,
+  selectedBox: selectedBox,
+  isMultiSelectMode: isMultiSelectMode,
+  isResizing: isResizing,
+  resizeHandle: resizeHandle,
+  dragStartX: dragStartX,
+  dragStartY: dragStartY,
+  timestamp: new Date().toISOString()
+});
+
+
+
+// ===== 🔍 DEBUGGING HELPERS ===== //
+console.log("Available hintLookup keys:", Object.keys(hintLookup));
+console.log("Available excelData keys:", Object.keys(excelData));
+// ================================ //
+
+
+
+// DOM elements
+const imageContainer = document.getElementById('image-container');
+const image = document.getElementById('report-img');
+const popup = document.getElementById('popup');
+const presetDropdown = document.getElementById('violationPreset');
+const saveButton = document.getElementById('saveTag');
+const cancelButton = document.getElementById('cancelTag');
+const sidebarHints = document.getElementById('sidebar-hints');
+const metaDetails = document.getElementById('meta-details');
+const creditorNameElem = document.getElementById('creditor-name');
+const severityElem = document.getElementById('severity-display');
+const fileNameElem = document.getElementById('file-name');
+const tagLog = document.getElementById('tag-log');
+const drawingGuide = document.getElementById('drawing-guide');
+const toggleMultiSelectBtn = document.getElementById('toggleMultiSelect');
+const deleteSelectedBtn = document.getElementById('deleteSelected');
+
+// Clear any existing saved data on page load
+localStorage.removeItem('violationTaggerData');
+tagData = [];
+updateTagLogDisplay();
+
+// Initialize event listeners
+document.getElementById('loadImage').addEventListener('change', handleImageUpload);
+toggleMultiSelectBtn.addEventListener('click', toggleMultiSelectMode);
+deleteSelectedBtn.addEventListener('click', deleteSelectedBoxes);
+document.addEventListener('keydown', handleKeyPress);
+document.getElementById('saveProgress').addEventListener('click', saveProgress);
+document.addEventListener('click', function(e) {
+  if (e.target.id === 'exportCSV') exportToCSV();
+});
+
+
+function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) {
+    console.log('No file selected');
+    return;
+  }
+
+  console.log('File selected:', file.name, 'Size:', file.size, 'bytes');
+  
+  // Clear only visual elements while preserving tagData
+  clearCanvas();
+  
+  // Show loading state
+  sidebarHints.innerHTML = '<div class="loading"></div> Loading image...';
+  imageName = file.name;
+  fileNameElem.innerHTML = `<strong>Image loaded:</strong> ${imageName}`;
+  
+  const reader = new FileReader();
+  
+  reader.onload = function(event) {
+    console.log('File read successfully, loading image...');
+    image.src = event.target.result;
+    
+    image.onload = function() {
+      console.log('Image loaded successfully. Dimensions:', 
+                 image.naturalWidth, 'x', image.naturalHeight);
+      updateMetaInfo(imageName);
+      loadHintsForImage();
+      
+      // Restore any existing boxes for this image
+      const existingTags = tagData.filter(tag => tag.image === imageName);
+      if (existingTags.length > 0) {
+        console.log(`Found ${existingTags.length} existing tags for this image`);
+        existingTags.forEach(tag => {
+          const box = document.createElement('div');
+          box.className = 'draw-box';
+          box.style.left = `${tag.x}px`;
+          box.style.top = `${tag.y}px`;
+          box.style.width = `${tag.width}px`;
+          box.style.height = `${tag.height}px`;
+          box.style.backgroundColor = tag.color;
+          box.style.border = '2px solid #333';
+          box.dataset.boxId = tag.id;
+          imageContainer.appendChild(box);
+        });
+      }
+    };
+    
+    image.onerror = function() {
+      console.error('Image failed to load:', image.error);
+      showError("❌ Failed to load image. Please try another file.");
+      resetMetaInfo();
+      image.src = ''; // Clear broken image
+    };
+  };
+  
+  reader.onerror = function() {
+    console.error('FileReader error:', reader.error);
+    showError("❌ Error reading file. Please try again.");
+    resetMetaInfo();
+  };
+  
+  reader.readAsDataURL(file);
+  console.log('Started reading file...');
+}
+
+
+
+function loadHintsForImage() {
+  // Try multiple filename formats
+  const lookupKeys = [
+    imageName,
+    normalizeFilename(imageName),
+    imageName.replace(/\.png$/i, '')
+  ];
+  
+  let hints = [];
+  let matchedKey = '';
+  for (const key of lookupKeys) {
+    if (hintLookup[key]) {
+      hints = hintLookup[key];
+      matchedKey = key;
+      console.log("Matched hints using key:", key);
+      break;
+    }
+  }
+  
+  currentHints = hints;
+  updateViolationDropdown();
+  updateHintsPanel();
+  
+  // Debug logging
+  console.log('Current hints loaded:', {
+    imageName: imageName,
+    lookupKeysTried: lookupKeys,
+    matchedKey: matchedKey,
+    hintsFound: hints
+  });
+  
+  if (hints.length === 0) {
+    console.warn("No hints found for these keys:", lookupKeys);
+  }
+}
+
+
+
+function clearCanvas() {
+  // Remove all boxes from DOM
+  imageContainer.querySelectorAll('.draw-box').forEach(b => b.remove());
+  
+  // Reset UI elements
+  popup.style.display = 'none';
+  selectedBox = null;
+  currentBox = null;
+  isResizing = false;
+  resizeHandle = null;
+  
+  // Clear the tag log display
+  tagLog.innerHTML = '';
+  
+  console.log('Canvas cleared for new image, but tagData preserved');
+}
+
+
+
+function updateMetaInfo(filename) {
+  const parsed = parseFilename(filename);
+  if (!parsed) {
+    resetMetaInfo();
+    return;
+  }
+
+  // Try multiple filename formats for Excel data
+  const excelKeys = [
+    normalizeFilename(filename),
+    filename,
+    filename.replace(/\.png$/i, '')
+  ];
+  
+  let excelInfo = {};
+  for (const key of excelKeys) {
+    if (excelData[key]) {
+      excelInfo = excelData[key];
+      break;
+    }
+  }
+
+  metaDetails.innerHTML = `
+    <strong>Creditor:</strong> ${parsed.creditorCode} | 
+    <strong>Bureau:</strong> ${parsed.bureau} | 
+    <strong>Date:</strong> ${parsed.date} | 
+    <strong>Page:</strong> ${parsed.page}
+  `;
+  
+  creditorNameElem.innerHTML = `<strong>Creditor Name:</strong> ${excelInfo.creditor || '—'}`;
+  severityElem.innerHTML = `<strong>Severity:</strong> ${excelInfo.severity || '—'}`;
+}
+
+function normalizeFilename(filename) {
+  if (!filename) return '';
+  return filename.toLowerCase().endsWith('.png') ? filename : filename + '.png';
+}
+
+// Enhanced parseFilename with better error handling
+function parseFilename(filename) {
+  if (!filename) return null;
+  try {
+    const normalized = normalizeFilename(filename);
+    const parts = normalized.split('-');
+    if (parts.length < 5) {
+      console.warn('Filename does not match expected pattern:', filename);
+      return {
+        creditorCode: 'Unknown',
+        bureau: 'Unknown',
+        date: 'Unknown',
+        page: 'Unknown'
+      };
+    }
+    return {
+      creditorCode: parts[0] || 'Unknown',
+      bureau: parts[1] || 'Unknown',
+      date: `${parts[2] || 'Unknown'}-${parts[3] || 'Unknown'}-${parts[4] || 'Unknown'}`,
+      page: parts.slice(5).join('-').replace(/\.png$/i, '') || 'Unknown'
+    };
+  } catch (e) {
+    console.error('Error parsing filename:', e);
+    return {
+      creditorCode: 'Error',
+      bureau: 'Error',
+      date: 'Error',
+      page: 'Error'
+    };
+  }
+}
+
+
+function updateViolationDropdown() {
+  presetDropdown.innerHTML = '<option value="" disabled selected>Select a violation</option>';
+  currentHints.forEach((hint, index) => {
+    const option = document.createElement('option');
+    option.value = index;
+    option.textContent = `${hint.label} (${hint.covers.length} codes)`;
+    presetDropdown.appendChild(option);
+  });
+}
+
+function updateHintsPanel() {
+  if (currentHints.length > 0) {
+    sidebarHints.innerHTML = '<ul>' + currentHints.map(h => {
+      const isCombo = h.covers.length > 1;
+      const comboNote = isCombo ? `<div style="color: #d9534f; font-weight: bold; margin-top: 5px;">🧠 One tag covers multiple FCRA violations</div>` : '';
+      return `<li>🔍 <strong>${h.label}</strong><br><ul style="margin-left: 10px;">${h.covers.map(code => `<li>${code}</li>`).join('')}</ul><em>${h.action}</em>${comboNote}</li>`;
+    }).join('') + '</ul>';
+  } else if (hintLookup.hasOwnProperty(normalizeFilename(imageName))) {
+    sidebarHints.innerHTML = '<div class="error-message">⚠️ No violations expected on this page.</div>';
+  } else {
+    sidebarHints.innerHTML = '<div class="error-message">⚠️ No hint data available for this image.</div>';
+  }
+}
+
+function showError(message) {
+  sidebarHints.innerHTML = `<div class="error-message">${message}</div>`;
+}
+
+// Drawing and box manipulation
+imageContainer.addEventListener('mousedown', startDrawingOrSelecting);
+imageContainer.addEventListener('mousemove', handleMouseMove);
+imageContainer.addEventListener('mouseup', handleMouseUp);
+imageContainer.addEventListener('mouseleave', cancelDrawing);
+
+function startDrawingOrSelecting(e) {
+  if (e.target.classList.contains('resize-handle')) {
+    startResizing(e);
+    return;
+  }
+
+  if (e.target.classList.contains('draw-box')) {
+    selectBox(e.target, e.shiftKey);
+    startMovingBox(e);
+    return;
+  }
+
+  if (popup.style.display !== 'none') return;
+  
+  startDrawingBox(e);
+}
+
+function startDrawingBox(e) {
+  // Clear any existing selection
+  clearSelection();
+  
+  isDrawing = true;
+  const rect = imageContainer.getBoundingClientRect();
+  startX = e.clientX - rect.left;
+  startY = e.clientY - rect.top;
+  
+  currentBox = document.createElement('div');
+  currentBox.className = 'draw-box';
+  currentBox.style.left = `${startX}px`;
+  currentBox.style.top = `${startY}px`;
+  imageContainer.appendChild(currentBox);
+  
+  drawingGuide.style.display = 'block';
+  drawingGuide.style.left = `${startX + 10}px`;
+  drawingGuide.style.top = `${startY + 10}px`;
+}
+
+function selectBox(box, isMultiSelect) {
+  if (!isMultiSelect || !isMultiSelectMode) {
+    clearSelection();
+  }
+  
+  box.classList.toggle('selected', !isMultiSelect);
+  box.classList.toggle('multi-selected', isMultiSelect);
+  box.setAttribute('data-selected', 'true');
+  
+  if (!isMultiSelect) {
+    selectedBox = box;
+    addResizeHandles(box);
+  }
+}
+
+function clearSelection() {
+  document.querySelectorAll('.draw-box').forEach(box => {
+    box.classList.remove('selected', 'multi-selected');
+    box.removeAttribute('data-selected');
+    box.querySelectorAll('.resize-handle').forEach(h => h.remove());
+  });
+  selectedBox = null;
+}
+
+function addResizeHandles(box) {
+  if (box.querySelector('.resize-handle')) return;
+  
+  const positions = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+  positions.forEach(pos => {
+    const handle = document.createElement('div');
+    handle.className = `resize-handle ${pos}`;
+    box.appendChild(handle);
+  });
+}
+
+function startMovingBox(e) {
+  if (!selectedBox) return;
+  
+  const rect = imageContainer.getBoundingClientRect();
+  dragStartX = e.clientX - parseInt(selectedBox.style.left);
+  dragStartY = e.clientY - parseInt(selectedBox.style.top);
+  
+  // Add temporary moving class
+  selectedBox.classList.add('moving');
+  
+  document.addEventListener('mousemove', moveBox);
+  document.addEventListener('mouseup', stopMovingBox);
+  
+  console.log('Started moving box:', selectedBox.dataset.boxId);
+}
+
+function moveBox(e) {
+  if (!selectedBox) return;
+  
+  const rect = imageContainer.getBoundingClientRect();
+  let newX = e.clientX - dragStartX;
+  let newY = e.clientY - dragStartY;
+  
+  // Constrain to container
+  newX = Math.max(0, Math.min(newX, rect.width - parseInt(selectedBox.style.width)));
+  newY = Math.max(0, Math.min(newY, rect.height - parseInt(selectedBox.style.height)));
+  
+  selectedBox.style.left = `${newX}px`;
+  selectedBox.style.top = `${newY}px`;
+  
+  // Update the tag data using the box ID
+  const boxId = selectedBox.dataset.boxId;
+  const tagIndex = tagData.findIndex(tag => tag.id === boxId);
+  
+  if (tagIndex !== -1) {
+    tagData[tagIndex].x = newX;
+    tagData[tagIndex].y = newY;
+    updateTagLogDisplay(); // Force immediate UI update
+  }
+}
+
+
+function stopMovingBox() {
+  document.removeEventListener('mousemove', moveBox);
+  document.removeEventListener('mouseup', stopMovingBox);
+  
+  if (selectedBox) {
+    // Final position update
+    const boxId = selectedBox.dataset.boxId;
+    const tagIndex = tagData.findIndex(tag => tag.id === boxId);
+    
+    if (tagIndex !== -1) {
+      tagData[tagIndex].x = parseInt(selectedBox.style.left);
+      tagData[tagIndex].y = parseInt(selectedBox.style.top);
+      updateTagLogDisplay();
+    }
+    
+    selectedBox.querySelectorAll('.resize-handle').forEach(h => h.remove());
+    addResizeHandles(selectedBox);
+  }
+}
+
+function startResizing(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  
+  // Clean up any existing listeners
+  document.removeEventListener('mousemove', resizeBox);
+  document.removeEventListener('mouseup', stopResizing);
+  
+  isResizing = true;
+  resizeHandle = e.target;
+  activeResizeBox = e.target.parentElement;
+  selectedBox = activeResizeBox;
+  
+  const rect = activeResizeBox.getBoundingClientRect();
+  dragStartX = e.clientX;
+  dragStartY = e.clientY;
+  
+  console.log('Starting resize on box:', activeResizeBox);
+  
+  document.addEventListener('mousemove', resizeBox);
+  document.addEventListener('mouseup', stopResizing, { once: true });
+}
+
+
+function stopResizing() {
+  if (!isResizing) return;
+  
+  isResizing = false;
+  resizeHandle = null;
+  activeResizeBox = null;
+  
+  document.removeEventListener('mousemove', resizeBox);
+  console.log('Resize completed');
+}
+
+
+
+function resizeBox(e) {
+  if (!isResizing || !resizeHandle || !activeResizeBox) return;
+
+  const handleClass = resizeHandle.className.split(' ')[1];
+  const minSize = 20;
+  const deltaX = e.clientX - dragStartX;
+  const deltaY = e.clientY - dragStartY;
+
+  let newWidth = parseInt(activeResizeBox.style.width);
+  let newHeight = parseInt(activeResizeBox.style.height);
+  let newLeft = parseInt(activeResizeBox.style.left);
+  let newTop = parseInt(activeResizeBox.style.top);
+
+  // Calculate new dimensions
+  switch (handleClass) {
+    case 'top-left':
+      newWidth = Math.max(minSize, newWidth - deltaX);
+      newHeight = Math.max(minSize, newHeight - deltaY);
+      newLeft += deltaX;
+      newTop += deltaY;
+      break;
+    case 'top-right':
+      newWidth = Math.max(minSize, newWidth + deltaX);
+      newHeight = Math.max(minSize, newHeight - deltaY);
+      newTop += deltaY;
+      break;
+    case 'bottom-left':
+      newWidth = Math.max(minSize, newWidth - deltaX);
+      newHeight = Math.max(minSize, newHeight + deltaY);
+      newLeft += deltaX;
+      break;
+    case 'bottom-right':
+      newWidth = Math.max(minSize, newWidth + deltaX);
+      newHeight = Math.max(minSize, newHeight + deltaY);
+      break;
+  }
+
+  // Constrain to container
+  const containerRect = imageContainer.getBoundingClientRect();
+  activeResizeBox.style.width = `${newWidth}px`;
+  activeResizeBox.style.height = `${newHeight}px`;
+  activeResizeBox.style.left = `${Math.max(0, Math.min(newLeft, containerRect.width - newWidth))}px`;
+  activeResizeBox.style.top = `${Math.max(0, Math.min(newTop, containerRect.height - newHeight))}px`;
+
+  // Update tag data in real-time
+  const boxId = activeResizeBox.dataset.boxId;
+  const tagIndex = tagData.findIndex(tag => tag.id === boxId);
+  
+  if (tagIndex !== -1) {
+    tagData[tagIndex] = {
+      ...tagData[tagIndex],
+      x: parseInt(activeResizeBox.style.left),
+      y: parseInt(activeResizeBox.style.top),
+      width: newWidth,
+      height: newHeight
+    };
+    updateTagLogDisplay();
+  }
+
+  dragStartX = e.clientX;
+  dragStartY = e.clientY;
+}
+
+
+
+
+
+
+
+function handleMouseMove(e) {
+  if (isResizing) return;
+  
+  if (isDrawing && currentBox) {
+    updateDrawingBox(e);
+  } else if (e.target.classList.contains('draw-box')) {
+    // Highlight potential selection
+  }
+}
+
+function updateDrawingBox(e) {
+  const rect = imageContainer.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  
+  const width = Math.abs(x - startX);
+  const height = Math.abs(y - startY);
+  
+  currentBox.style.width = `${width}px`;
+  currentBox.style.height = `${height}px`;
+  currentBox.style.left = `${Math.min(x, startX)}px`;
+  currentBox.style.top = `${Math.min(y, startY)}px`;
+  
+  drawingGuide.style.left = `${Math.min(x, startX) + 10}px`;
+  drawingGuide.style.top = `${Math.min(y, startY) + 10}px`;
+  drawingGuide.textContent = `Drawing box: ${width}×${height}px`;
+}
+
+function handleMouseUp(e) {
+  if (isResizing) return;
+  
+  if (isDrawing && currentBox) {
+    finishDrawingBox(e);
+  }
+}
+
+function finishDrawingBox(e) {
+  isDrawing = false;
+  drawingGuide.style.display = 'none';
+  
+  const width = parseInt(currentBox.style.width);
+  const height = parseInt(currentBox.style.height);
+  
+  if (width > 10 && height > 10) {
+    popup.style.left = `${e.pageX + 10}px`;
+    popup.style.top = `${e.pageY + 10}px`;
+    popup.style.display = 'block';
+  } else {
+    currentBox.remove();
+    currentBox = null;
+  }
+}
+
+function cancelDrawing() {
+  if (isDrawing && currentBox) {
+    currentBox.remove();
+    currentBox = null;
+    isDrawing = false;
+    drawingGuide.style.display = 'none';
+  }
+}
+
+function toggleMultiSelectMode() {
+  isMultiSelectMode = !isMultiSelectMode;
+  toggleMultiSelectBtn.textContent = `🔘 Multi-Select Mode: ${isMultiSelectMode ? 'ON' : 'OFF'}`;
+  toggleMultiSelectBtn.style.backgroundColor = isMultiSelectMode ? '#d4edda' : '';
+  
+  if (!isMultiSelectMode) {
+    clearSelection();
+  }
+}
+
+
+
+
+
+
+function deleteSelectedBoxes() {
+  document.querySelectorAll('.draw-box[data-selected="true"]').forEach(box => {
+    const boxId = box.dataset.boxId;
+    
+    // Remove from tagData array
+    tagData = tagData.filter(tag => tag.id !== boxId);
+    
+    // Remove from DOM
+    box.remove();
+    
+    console.log(`Deleted box ${boxId}`);
+  });
+  
+  // Force immediate UI update
+  updateTagLogDisplay();
+}
+
+
+
+function findTagIndexForBox(box) {
+  const x = parseInt(box.style.left);
+  const y = parseInt(box.style.top);
+  return tagData.findIndex(tag => 
+    tag.x === x && tag.y === y
+  );
+}
+
+function updateTagLogDisplay() {
+  tagLog.innerHTML = '';
+  tagData.forEach(tag => {
+    const tagEntry = document.createElement('div');
+    tagEntry.className = 'tag-entry';
+    tagEntry.dataset.tagId = tag.id;
+    tagEntry.innerHTML = `
+      <div class="tag-label">📍 ${tag.label}</div>
+      <div class="tag-codes">${tag.codes.join(', ')}</div>
+      <div class="tag-position">Position: (${tag.x}, ${tag.y}) Size: ${tag.width}×${tag.height}px</div>
+    `;
+    tagLog.appendChild(tagEntry);
+  });
+}
+
+
+function updateTagDataForActiveBox() {
+  if (!activeResizeBox) return;
+  
+  const box = activeResizeBox;
+  const x = parseInt(box.style.left);
+  const y = parseInt(box.style.top);
+  const width = parseInt(box.style.width);
+  const height = parseInt(box.style.height);
+  
+  // Find the exact box in tagData using multiple properties
+  const tagIndex = tagData.findIndex(tag => 
+    Math.abs(tag.x - x) < 10 && 
+    Math.abs(tag.y - y) < 10 &&
+    tag.width === parseInt(box.dataset.originalWidth || 0) &&
+    tag.height === parseInt(box.dataset.originalHeight || 0)
+  );
+  
+  if (tagIndex !== -1) {
+    tagData[tagIndex] = {
+      ...tagData[tagIndex],
+      x: x,
+      y: y,
+      width: width,
+      height: height
+    };
+    console.log('Updated tag data for box:', tagData[tagIndex]);
+  }
+}
+
+
+
+
+
+function updateTagDataForBox(box) {
+  if (!box) return;
+  
+  const x = parseInt(box.style.left);
+  const y = parseInt(box.style.top);
+  const width = parseInt(box.style.width);
+  const height = parseInt(box.style.height);
+  
+  // More precise matching using original dimensions
+  const tagIndex = tagData.findIndex(tag => 
+    tag.x === parseInt(box.dataset.originalX || 0) &&
+    tag.y === parseInt(box.dataset.originalY || 0)
+  );
+  
+  if (tagIndex !== -1) {
+    tagData[tagIndex] = {
+      ...tagData[tagIndex],
+      x: x,
+      y: y,
+      width: width,
+      height: height
+    };
+    console.log('Updated tag:', tagData[tagIndex]);
+    updateTagLogDisplay(); // Force immediate UI update
+  }
+}
+
+
+
+
+
+
+
+
+function handleKeyPress(e) {
+  if (!selectedBox) return;
+  
+  const step = e.shiftKey ? 5 : 1;
+  const rect = imageContainer.getBoundingClientRect();
+  
+  let newLeft = parseInt(selectedBox.style.left);
+  let newTop = parseInt(selectedBox.style.top);
+  
+  switch (e.key) {
+    case 'ArrowUp':
+      newTop = Math.max(0, newTop - step);
+      break;
+    case 'ArrowDown':
+      newTop = Math.min(rect.height - parseInt(selectedBox.style.height), newTop + step);
+      break;
+    case 'ArrowLeft':
+      newLeft = Math.max(0, newLeft - step);
+      break;
+    case 'ArrowRight':
+      newLeft = Math.min(rect.width - parseInt(selectedBox.style.width), newLeft + step);
+      break;
+    case 'Delete':
+      deleteSelectedBoxes();
+      return;
+  }
+  
+  selectedBox.style.left = `${newLeft}px`;
+  selectedBox.style.top = `${newTop}px`;
+  
+  // Update handles
+  selectedBox.querySelectorAll('.resize-handle').forEach(h => h.remove());
+  addResizeHandles(selectedBox);
+}
+
+// Tag management
+saveButton.addEventListener('click', saveTag);
+cancelButton.addEventListener('click', cancelTag);
+
+
+
+
+function saveTag() {
+  const index = presetDropdown.value;
+  if (index === '') return;
+
+  const selected = currentHints[parseInt(index)];
+  const boxesToTag = isMultiSelectMode ? 
+    Array.from(document.querySelectorAll('.draw-box[data-selected="true"]')) : 
+    [currentBox];
+
+  boxesToTag.forEach(box => {
+    const boxId = `box-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    box.dataset.boxId = boxId;
+
+    const tag = {
+      id: boxId,  // Unique identifier
+      image: imageName,
+      label: selected.label,
+      codes: selected.covers.map(c => c.split(':')[0]),
+      color: selected.covers.length > 1 ? 'rgba(255, 0, 0, 0.15)' : 'rgba(255, 165, 0, 0.15)',
+      x: parseInt(box.style.left),
+      y: parseInt(box.style.top),
+      width: parseInt(box.style.width),
+      height: parseInt(box.style.height),
+      timestamp: new Date().toLocaleTimeString()
+    };
+    
+    tagData.push(tag);
+    console.log('Created tag:', tag);
+  });
+
+  updateTagLogDisplay();
+  popup.style.display = 'none';
+  currentBox = null;
+  if (isMultiSelectMode) clearSelection();
+}
+
+
+
+function addTagToLog(tag) {
+  const tagEntry = document.createElement('div');
+  tagEntry.className = 'tag-entry';
+  tagEntry.innerHTML = `
+    <div class="tag-label">📍 ${tag.label}</div>
+    <div class="tag-codes">${tag.codes.join(', ')}</div>
+    <div class="tag-position">Position: (${tag.x}, ${tag.y}) Size: ${tag.width}×${tag.height}px</div>
+  `;
+  tagLog.prepend(tagEntry);
+}
+
+function cancelTag() {
+  popup.style.display = 'none';
+  if (currentBox) currentBox.remove();
+  currentBox = null;
+}
+
+
+
+function saveProgress() {
+  try {
+    const saveData = {
+      tagData: tagData,
+      lastImage: imageName,
+      timestamp: new Date().toISOString()
+    };
+    localStorage.setItem('violationTaggerData', JSON.stringify(saveData));
+    alert(`Progress saved at ${new Date().toLocaleTimeString()}!\n${tagData.length} violations stored.`);
+    console.log('Progress saved:', saveData);
+  } catch (e) {
+    alert('Failed to save progress: ' + e.message);
+    console.error('Save error:', e);
+  }
+}
+
+
+function loadSavedProgress() {
+  // First clear any existing data
+  tagData = [];
+  
+  // Only load if user confirms
+  if (confirm('Load previously saved violations?')) {
+    const saved = localStorage.getItem('violationTaggerData');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        tagData = data.tagData || [];
+        updateTagLogDisplay();
+        console.log(`Loaded ${tagData.length} violations from storage`);
+        
+        // Optional: Load the last image if available
+        if (data.lastImage) {
+          console.log('Last worked on image:', data.lastImage);
+          // You can add auto-loading logic here if needed
+        }
+      } catch (e) {
+        console.error('Failed to load saved data:', e);
+        alert('Error loading saved data. See console for details.');
+      }
+    } else {
+      console.log('No saved data found');
+    }
+  }
+}
+
+
+// Export
+document.getElementById('exportCSV').addEventListener('click', exportToCSV);
+
+function exportToCSV() {
+  if (tagData.length === 0) {
+    alert('No violations to export!');
+    return;
+  }
+
+  // Create CSV content
+  const headers = ['Image', 'Label', 'Codes', 'X', 'Y', 'Width', 'Height', 'Timestamp'];
+  const csvRows = [
+    headers.join(','),
+    ...tagData.map(tag => [
+      `"${tag.image.replace(/"/g, '""')}"`,
+      `"${tag.label.replace(/"/g, '""')}"`,
+      `"${tag.codes.join('; ').replace(/"/g, '""')}"`,
+      tag.x,
+      tag.y,
+      tag.width,
+      tag.height,
+      `"${tag.timestamp}"`
+    ].join(','))
+  ];
+
+  // Create download
+  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', `violations_export_${new Date().toISOString().slice(0,10)}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  console.log(`Exported ${tagData.length} violations from ${new Set(tagData.map(t => t.image)).size} images`);
+}
+
+
+
+</script>
+</body>
+</html>
