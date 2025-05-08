@@ -201,16 +201,13 @@
   </style>
 </head>
 
-
-
-
-
-
 <body>
-  <!-- LEFT PANEL -->
-  <div id="left-panel">...</div>
+<!-- LEFT PANEL -->
+<div id="left-panel">
+  <!-- Put your "What to Look For" and tag list here -->
+</div>
 
-  <!-- CENTER PANEL -->
+<!-- CENTER PANEL -->
 <div id="right-panel">
   <div id="image-container">
     <img id="report-img" src="" alt="Uploaded image will appear here" />
@@ -226,44 +223,27 @@
   </div>
 </div>
 
-
-  <!-- DROPDOWN PANEL -->
-  <div id="selector-panel">
-    <h3 style="font-size:14px;">🗂️ Select Credit Report Page</h3>
-    <label>Bureau:
-      <select id="bureauSelect" onchange="updateCreditorOptions()" style="width:100%;">
-        <option disabled selected>Select Bureau</option>
-        <option value="Equifax">Equifax</option>
-        <option value="Experian">Experian</option>
-        <option value="TransUnion">TransUnion</option>
-      </select>
-    </label>
-    <br><br>
-    <label>Creditor:
-      <select id="creditorSelect" onchange="updateDateOptions()" style="width:100%;" disabled></select>
-    </label>
-    <br><br>
-    <label>Date + Page:
-      <select id="dateSelect" style="width:100%;" disabled></select>
-    </label>
-    <br><br>
-    <button onclick="loadSelectedImage()">📷 Load PNG</button>
-  </div>
-
-
-
-  <div id="image-container">
-    <img id="report-img" src="" alt="Uploaded image will appear here" />
-  </div>
-
-  <!-- Popup Form -->
-  <div id="popup">
-    <label><strong>Select Violation:</strong><br/>
-      <select id="violationPreset" style="width:100%;padding:4px;"></select>
-    </label><br/><br/>
-    <button id="saveTag">✅ Save Tag</button>
-    <button id="cancelTag">❌ Cancel</button>
-  </div>
+<!-- RIGHT DROPDOWN PANEL -->
+<div id="selector-panel">
+  <h3 style="font-size:14px;">🗂️ Select Credit Report Page</h3>
+  <label>Bureau:
+    <select id="bureauSelect" onchange="updateCreditorOptions()" style="width:100%;">
+      <option disabled selected>Select Bureau</option>
+      <option value="Equifax">Equifax</option>
+      <option value="Experian">Experian</option>
+      <option value="TransUnion">TransUnion</option>
+    </select>
+  </label>
+  <br><br>
+  <label>Creditor:
+    <select id="creditorSelect" onchange="updateDateOptions()" style="width:100%;" disabled></select>
+  </label>
+  <br><br>
+  <label>Date + Page:
+    <select id="dateSelect" style="width:100%;" disabled></select>
+  </label>
+  <br><br>
+  <button onclick="loadSelectedImage()">📷 Load PNG</button>
 </div>
 
 
