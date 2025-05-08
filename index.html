@@ -204,7 +204,26 @@
 <body>
 <!-- LEFT PANEL -->
 <div id="left-panel">
-  <!-- Put your "What to Look For" and tag list here -->
+  <div class="control-panel">
+    <label for="loadImage" class="file-input-button">📁 Load Image</label>
+    <input type="file" id="loadImage" accept="image/png,image/jpeg,image/gif" style="display:none" />
+    <button id="exportCSV">📤 Export CSV</button>
+    <button id="toggleMultiSelect">🔘 Multi: OFF</button>
+    <button id="deleteSelected">🗑️ Delete Selected</button>
+    <button id="clearImageData">🧹 Clear Image Data</button>
+    <button id="saveProgress">💾 Save Progress</button>
+    <button id="syncToAirtable">📡 Sync to Airtable</button>
+  </div>
+
+  <div id="status-message" class="status-message"></div>
+
+  <!-- What to Look For -->
+  <div id="sidebar-hints">
+    Upload image to see violations.
+  </div>
+
+  <!-- Violation Tag Log -->
+  <div id="tag-log"></div>
 </div>
 
 <!-- CENTER PANEL -->
