@@ -225,6 +225,34 @@
   
   <div id="status-message" class="status-message"></div>
 
+
+
+<!-- IMAGE SELECTOR DROPDOWN -->
+<div id="image-selector" style="margin-top: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 8px;">
+  <h3 style="font-size:14px;">🗂️ Select Credit Report Page</h3>
+  <label>Bureau:
+    <select id="bureauSelect" onchange="updateCreditorOptions()" style="width:100%;">
+      <option disabled selected>Select Bureau</option>
+      <option value="Equifax">Equifax</option>
+      <option value="Experian">Experian</option>
+      <option value="TransUnion">TransUnion</option>
+    </select>
+  </label>
+  <br><br>
+  <label>Creditor:
+    <select id="creditorSelect" onchange="updateDateOptions()" style="width:100%;" disabled></select>
+  </label>
+  <br><br>
+  <label>Date + Page:
+    <select id="dateSelect" style="width:100%;" disabled></select>
+  </label>
+  <br><br>
+  <button onclick="loadSelectedImage()">📷 Load PNG</button>
+</div>
+
+
+
+
   <div id="image-container">
     <img id="report-img" src="" alt="Uploaded image will appear here" />
   </div>
@@ -1143,6 +1171,115 @@ function showStatusMessage(message, duration = 3000) {
     statusMessage.style.display = 'none';
   }, duration);
 }
+
+
+
+
+
+
+// --- DROPDOWN IMAGE SELECTOR LOGIC ---
+
+const imageMap = {
+  "Equifax": {
+    "AL": ["2024-04-25-P57", "2024-04-25-P58"],
+    "BB": ["2024-04-25-P20"],
+    "BK": ["2024-04-25-P16", "2024-04-25-P17"],
+    "BY": ["2024-04-25-P34", "2024-04-25-P35"],
+    "C1": ["2024-04-25-P26"],
+    "C2": ["2024-04-25-P28"],
+    "CR": ["2024-04-25-P18", "2024-04-25-P19"],
+    "DB": ["2024-04-25-P30", "2024-04-25-P31"],
+    "DL": ["2024-04-25-P50", "2024-04-25-P51"],
+    "HD": ["2024-04-25-P32", "2024-04-25-P33"],
+    "JP": ["2024-04-25-P24"],
+    "MF": ["2024-04-25-P67"],
+    "SR": ["2024-04-25-P22"]
+  },
+  "Experian": {
+    "AL": ["2024-04-25-P05"],
+    "BB": ["2024-04-25-P08", "2024-04-25-P09"],
+    "BK": ["2024-04-25-P06"],
+    "BY": ["2024-04-25-P07"],
+    "C1": ["2024-04-25-P11"],
+    "C2": ["2024-04-25-P12"],
+    "CR": ["2024-04-25-P16", "2024-04-25-P17"],
+    "DB": ["2024-04-25-P22"],
+    "DL": ["2024-04-25-P21", "2024-04-25-P22"],
+    "HD": ["2024-04-25-P34", "2024-04-25-P35"],
+    "JP": ["2024-04-25-P23"],
+    "MF": ["2024-04-25-P25"],
+    "SR": ["2024-04-25-P31"]
+  },
+  "TransUnion": {
+    "AL": ["2024-04-25-P07"],
+    "BB": ["2024-04-25-P14"],
+    "BK": ["2024-04-25-P10"],
+    "BY": ["2024-04-25-P12"],
+    "C1": ["2024-04-25-P17"],
+    "C2": ["2024-04-25-P20"],
+    "CR": ["2024-04-25-P26"],
+    "DB": ["2024-04-25-P30"],
+    "DL": ["2024-04-25-P27"],
+    "JP": ["2024-04-25-P28"],
+    "MF": ["2024-04-25-P31"],
+    "SR": ["2024-04-25-P34"]
+  }
+};
+
+function updateCreditorOptions() {
+  const bureau = document.getElementById("bureauSelect").value;
+  const creditorSelect = document.getElementById("creditorSelect");
+  creditorSelect.innerHTML = `<option disabled selected>Select Creditor</option>`;
+
+  if (!imageMap[bureau]) return;
+
+  Object.keys(imageMap[bureau]).forEach(creditor => {
+    const opt = document.createElement("option");
+    opt.value = creditor;
+    opt.textContent = creditor;
+    creditorSelect.appendChild(opt);
+  });
+
+  creditorSelect.disabled = false;
+  document.getElementById("dateSelect").innerHTML = '';
+  document.getElementById("dateSelect").disabled = true;
+}
+
+function updateDateOptions() {
+  const bureau = document.getElementById("bureauSelect").value;
+  const creditor = document.getElementById("creditorSelect").value;
+  const dateSelect = document.getElementById("dateSelect");
+
+  dateSelect.innerHTML = `<option disabled selected>Select Date + Page</option>`;
+
+  if (!imageMap[bureau] || !imageMap[bureau][creditor]) return;
+
+  imageMap[bureau][creditor].forEach(entry => {
+    const opt = document.createElement("option");
+    opt.value = `${creditor}-${bureau.charAt(0).toUpperCase()}${bureau.slice(1,2)}-${entry}.png`;
+    opt.textContent = entry;
+    dateSelect.appendChild(opt);
+  });
+
+  dateSelect.disabled = false;
+}
+
+function loadSelectedImage() {
+  const bureau = document.getElementById("bureauSelect").value;
+  const selectedFilename = document.getElementById("dateSelect").value;
+
+  if (!bureau || !selectedFilename) {
+    alert("Please select all fields.");
+    return;
+  }
+
+  const path = `${bureau}/${selectedFilename}`;
+  imageName = selectedFilename;
+  document.getElementById("report-img").src = path;
+  showStatusMessage(`✅ Loaded: ${path}`);
+}
+
+
 
 
 
