@@ -189,6 +189,15 @@
       margin-top: 5px;
       display: none;
     }
+#selector-panel {
+  width: 250px;
+  padding: 15px;
+  background-color: #fefefe;
+  border-left: 1px solid #ccc;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
   </style>
 </head>
 
@@ -197,59 +206,35 @@
 
 
 
-
 <body>
+  <!-- LEFT PANEL -->
+  <div id="left-panel">...</div>
 
-<!-- LEFT PANEL -->
-<div id="left-panel">
-  <h3 style="font-size:14px;margin:0 0 8px;">🔍 What to Look For</h3>
-  <div id="sidebar-hints">Upload image to see violations.</div>
+  <!-- CENTER PANEL -->
+  <div id="right-panel">...</div>
 
-  <h3 style="font-size:14px;margin:15px 0 8px;">📁 Tags</h3>
-  <div id="tag-log"></div>
-</div>
-
-<!-- RIGHT PANEL -->
-<div id="right-panel">
-  <h2 style="margin-top:0;font-size:16px;">Violation Tagger v6.2 – Fixed Cache Issue</h2>
-  <div class="control-panel">
-    <label for="loadImage" class="file-input-button">📁 Load Image</label>
-    <input type="file" id="loadImage" accept="image/png,image/jpeg,image/gif" style="display:none" />
-    <button id="exportCSV">📤 Export CSV</button>
-    <button id="toggleMultiSelect">🔘 Multi: OFF</button>
-    <button id="deleteSelected">🗑️ Delete Selected</button>
-    <button id="clearImageData">🧹 Clear Image Data</button>
-    <button id="saveProgress">💾 Save Progress</button>
-    <button id="syncToAirtable">📡 Sync to Airtable</button>
+  <!-- DROPDOWN PANEL -->
+  <div id="selector-panel">
+    <h3 style="font-size:14px;">🗂️ Select Credit Report Page</h3>
+    <label>Bureau:
+      <select id="bureauSelect" onchange="updateCreditorOptions()" style="width:100%;">
+        <option disabled selected>Select Bureau</option>
+        <option value="Equifax">Equifax</option>
+        <option value="Experian">Experian</option>
+        <option value="TransUnion">TransUnion</option>
+      </select>
+    </label>
+    <br><br>
+    <label>Creditor:
+      <select id="creditorSelect" onchange="updateDateOptions()" style="width:100%;" disabled></select>
+    </label>
+    <br><br>
+    <label>Date + Page:
+      <select id="dateSelect" style="width:100%;" disabled></select>
+    </label>
+    <br><br>
+    <button onclick="loadSelectedImage()">📷 Load PNG</button>
   </div>
-  
-  <div id="status-message" class="status-message"></div>
-
-
-
-<!-- IMAGE SELECTOR DROPDOWN -->
-<div id="image-selector" style="margin-top: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 8px;">
-  <h3 style="font-size:14px;">🗂️ Select Credit Report Page</h3>
-  <label>Bureau:
-    <select id="bureauSelect" onchange="updateCreditorOptions()" style="width:100%;">
-      <option disabled selected>Select Bureau</option>
-      <option value="Equifax">Equifax</option>
-      <option value="Experian">Experian</option>
-      <option value="TransUnion">TransUnion</option>
-    </select>
-  </label>
-  <br><br>
-  <label>Creditor:
-    <select id="creditorSelect" onchange="updateDateOptions()" style="width:100%;" disabled></select>
-  </label>
-  <br><br>
-  <label>Date + Page:
-    <select id="dateSelect" style="width:100%;" disabled></select>
-  </label>
-  <br><br>
-  <button onclick="loadSelectedImage()">📷 Load PNG</button>
-</div>
-
 
 
 
@@ -1273,7 +1258,7 @@ function loadSelectedImage() {
     return;
   }
 
-  const path = `${bureau}/${selectedFilename}`;
+  const path = `${bureau.charAt(0).toUpperCase() + bureau.slice(1).toLowerCase()}/${selectedFilename}`;
   imageName = selectedFilename;
   document.getElementById("report-img").src = path;
   showStatusMessage(`✅ Loaded: ${path}`);
