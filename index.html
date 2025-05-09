@@ -598,16 +598,13 @@ function loadHintsForImage() {
     return;
   }
 
-  // Case-insensitive bureau detection
+  // Enhanced bureau detection that works with both upload and dropdown filenames
   const upperName = imageName.toUpperCase();
   let bureauCode = '';
   
-  if (upperName.includes('-EQ-')) bureauCode = 'EQ';
-  else if (upperName.includes('-EX-')) bureauCode = 'EX';
-  else if (upperName.includes('-TU-')) bureauCode = 'TU';
-  else if (upperName.includes('EQUIFAX')) bureauCode = 'EQ';
-  else if (upperName.includes('EXPERIAN')) bureauCode = 'EX';
-  else if (upperName.includes('TRANSUNION')) bureauCode = 'TU';
+  if (upperName.includes('EQUIFAX') || upperName.includes('-EQ-')) bureauCode = 'EQ';
+  else if (upperName.includes('EXPERIAN') || upperName.includes('-EX-')) bureauCode = 'EX';
+  else if (upperName.includes('TRANSUNION') || upperName.includes('-TU-')) bureauCode = 'TU';
 
   debug.log(`Detected bureau code: ${bureauCode || 'None'} from filename: ${imageName}`);
   currentHints = bureauCode ? [...hintLookup[bureauCode]] : [];
@@ -1308,7 +1305,8 @@ function updateDateOptions() {
 
   imageMap[bureau][creditor].forEach(entry => {
     const opt = document.createElement("option");
-    opt.value = `${creditor}-${bureau.charAt(0).toUpperCase()}${bureau.slice(1,2)}-${entry}.png`;
+    // Simplified filename format that matches the detection patterns
+    opt.value = `${bureau}-${creditor}-${entry}.png`;
     opt.textContent = entry;
     dateSelect.appendChild(opt);
   });
@@ -1325,38 +1323,35 @@ function loadSelectedImage() {
     return;
   }
 
-  const path = `${bureau.charAt(0).toUpperCase() + bureau.slice(1).toLowerCase()}/${selectedFilename}`;
-  imageName = selectedFilename;
-  
   // Clear existing data first
   clearAllBoxes();
   tagData = [];
   currentHints = [];
   updateTagLog();
-  sidebarHints.innerHTML = 'Upload image to see violations.';
+  sidebarHints.innerHTML = 'Loading image...';
+
+  // Set the image name before loading
+  imageName = selectedFilename;
   
   // Set up image load handlers
   image.onload = function() {
     debug.log('Image onload event triggered');
-    
-    loadHintsForImage();
+    loadHintsForImage();  // Load hints after image is loaded
     initViolationDropdown();
-    clearSelection();
     loadTagsForCurrentImage();
-    
     showStatusMessage(`✅ Image loaded: ${imageName}`);
-    debug.log(`Image dimensions: ${image.naturalWidth}x${image.naturalHeight}`);
-    debug.log(`Rendered dimensions: ${image.width}x${image.height}`);
   };
   
   image.onerror = function() {
     debug.log('Image load error occurred');
     showStatusMessage('⚠️ Failed to load image', 5000);
+    sidebarHints.innerHTML = 'Error loading image';
   };
-  
-  // Load the image
+
+  // Construct proper path and load image
+  const path = `${bureau}/${selectedFilename}`;
+  debug.log(`Loading image from: ${path}`);
   image.src = path;
-  showStatusMessage(`🖼️ Loading image: ${path}`);
 }
 
 
