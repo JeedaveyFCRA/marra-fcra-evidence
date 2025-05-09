@@ -1299,23 +1299,52 @@ function loadSelectedImage() {
     return;
   }
 
-  const path = `${bureau.charAt(0).toUpperCase() + bureau.slice(1).toLowerCase()}/${selectedFilename}`;
-  imageName = selectedFilename;
-  
-  // Clear existing data first
+  // Save current data before loading new image
+  if (imageName) {
+    saveTagsForCurrentImage();
+  }
+
+  // Clear all existing violation boxes and reset state
   clearAllBoxes();
   tagData = [];
   currentHints = [];
   updateTagLog();
   sidebarHints.innerHTML = 'Upload image to see violations.';
   
-  document.getElementById("report-img").src = path;
-  showStatusMessage(`✅ Loaded: ${path}`);
+  // Set new image name and path
+  imageName = selectedFilename;
+  const path = `${bureau.charAt(0).toUpperCase() + bureau.slice(1).toLowerCase()}/${selectedFilename}`;
   
-  // Load hints for the new image
-  loadHintsForImage();
-  initViolationDropdown();
+  // Set up image loading handlers
+  showStatusMessage('⏳ Loading image...', 0);
+  
+  image.onload = function() {
+    debug.log('Image onload event triggered');
+    
+    // Full cleanup before loading new content
+    clearAllBoxes();
+    tagData = [];
+    
+    loadHintsForImage();
+    initViolationDropdown();
+    clearSelection();
+    loadTagsForCurrentImage();
+    
+    showStatusMessage(`✅ Image loaded: ${imageName}`);
+    debug.log(`Image dimensions: ${image.naturalWidth}x${image.naturalHeight}`);
+    debug.log(`Rendered dimensions: ${image.width}x${image.height}`);
+  };
+
+  image.onerror = function() {
+    debug.log('Image load error occurred');
+    showStatusMessage('⚠️ Failed to load image', 5000);
+  };
+
+  // Start loading the image
+  image.src = path;
 }
+
+
 
 
 
