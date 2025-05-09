@@ -221,8 +221,10 @@
 
 
 
+
+
 <body>
-<!-- LEFT PANEL -->
+<!-- LEFT PANEL PART 2-->
 <div id="left-panel">
   <!-- What to Look For -->
   <div id="sidebar-hints">
@@ -292,8 +294,17 @@
   </div>
 </div>
 
+
+
+
+
+
+
+
+
+
 <script>
-// Bureau-specific FCRA violation hints
+// Bureau-specific FCRA violation hints PART 3
 const hintLookup = {
   "EQ": [
     {
@@ -435,16 +446,6 @@ const hintLookup = {
   ]
 };
 
-
-
-
-
-
-
-
-
-
-
 // Debug configuration
 const debug = {
   imageLoading: true,
@@ -483,7 +484,15 @@ const tagLog = document.getElementById('tag-log');
 const statusMessage = document.getElementById('status-message');
 const fileInput = document.getElementById('loadImage');
 
-// Initialize the application
+
+
+
+
+
+
+
+
+// Initialize the application PART 4
 function init() {
   debug.log('Initializing application...');
   loadAllProgress();
@@ -647,7 +656,7 @@ function initViolationDropdown() {
 
 
 
-// Save tags for current image
+// Save tags for current image PART 5
 function saveTagsForCurrentImage() {
   if (!imageName) {
     debug.log('No image name to save tags for');
@@ -784,6 +793,13 @@ function endAction(e) {
   }
 }
 
+
+
+
+
+
+
+// PART 6
 function startResizing(e) {
   debug.log('Starting box resize');
   e.preventDefault();
@@ -855,13 +871,6 @@ function resizeBox(e) {
   updateTagPosition(selectedBox);
   updateTagData(selectedBox);
 }
-
-
-
-
-
-
-
 
 // Box selection and movement functions
 function selectBox(box, multi) {
@@ -954,7 +963,15 @@ function updateTagData(box) {
   }
 }
 
-// Tag creation and management
+
+
+
+
+
+
+
+
+// Tag creation and management PART 7
 function saveTag() {
   const idx = presetDropdown.value;
   if (!currentBox || idx === '') {
@@ -1057,7 +1074,7 @@ function exportToCSV() {
 
 
 
-// Save all progress to localStorage
+// Save all progress to localStorage PART 8
 function saveAllProgress() {
   try {
     debug.log('Saving all progress to localStorage');
@@ -1203,7 +1220,16 @@ function showStatusMessage(message, duration = 3000) {
   }, duration);
 }
 
-// --- DROPDOWN IMAGE SELECTOR LOGIC ---
+
+
+
+
+
+
+
+
+
+// --- DROPDOWN IMAGE SELECTOR LOGIC PART 9 ---
 
 const imageMap = {
   "Equifax": {
@@ -1309,12 +1335,28 @@ function loadSelectedImage() {
   updateTagLog();
   sidebarHints.innerHTML = 'Upload image to see violations.';
   
-  document.getElementById("report-img").src = path;
-  showStatusMessage(`✅ Loaded: ${path}`);
+  // Set up image load handlers
+  image.onload = function() {
+    debug.log('Image onload event triggered');
+    
+    loadHintsForImage();
+    initViolationDropdown();
+    clearSelection();
+    loadTagsForCurrentImage();
+    
+    showStatusMessage(`✅ Image loaded: ${imageName}`);
+    debug.log(`Image dimensions: ${image.naturalWidth}x${image.naturalHeight}`);
+    debug.log(`Rendered dimensions: ${image.width}x${image.height}`);
+  };
   
-  // Load hints for the new image
-  loadHintsForImage();
-  initViolationDropdown();
+  image.onerror = function() {
+    debug.log('Image load error occurred');
+    showStatusMessage('⚠️ Failed to load image', 5000);
+  };
+  
+  // Load the image
+  image.src = path;
+  showStatusMessage(`🖼️ Loading image: ${path}`);
 }
 
 
@@ -1322,7 +1364,10 @@ function loadSelectedImage() {
 
 
 
-// Airtable Sync Settings
+
+
+
+// Airtable Sync Settings PART 10
 const AIRTABLE_TOKEN = 'patiiNzMeWbsIHD29.b5c3d562339758fef9d454a5f7b25aa5702f10a8e0d1506d8682de7ddbf80e77';
 const AIRTABLE_BASE_ID = 'apppDRYBhN8W65aL5';
 const AIRTABLE_TABLE_NAME = 'ExportedViolations';
@@ -1406,6 +1451,3 @@ debug.log('Violation Tagger script loaded');
 </script>
 </body>
 </html>
-
-
-
