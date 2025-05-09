@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Violation Tagger v6.3 – Fixed Hints Display</title>
+  <title>Violation Tagger v6.2 – Fixed Cache Issue</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -601,16 +601,7 @@ function loadHintsForImage() {
   else if (upperName.includes('TRANSUNION')) bureauCode = 'TU';
 
   debug.log(`Detected bureau code: ${bureauCode || 'None'} from filename: ${imageName}`);
-  
-  // Make sure hintLookup actually has entries for this bureau
-  if (bureauCode && hintLookup[bureauCode]) {
-    currentHints = [...hintLookup[bureauCode]];
-    debug.log(`Loaded ${currentHints.length} hints for bureau ${bureauCode}`);
-  } else {
-    debug.log(`No hints available for bureau code: ${bureauCode}`);
-    currentHints = [];
-  }
-  
+  currentHints = bureauCode ? [...hintLookup[bureauCode]] : [];
   updateHintsPanel();
 }
 
@@ -865,6 +856,13 @@ function resizeBox(e) {
   updateTagData(selectedBox);
 }
 
+
+
+
+
+
+
+
 // Box selection and movement functions
 function selectBox(box, multi) {
   debug.log(`Selecting box (multi: ${multi})`);
@@ -882,11 +880,6 @@ function clearSelection() {
   });
   selectedBox = null;
 }
-
-
-
-
-
 
 function addResizeHandles(box) {
   debug.log('Adding resize handles to box');
@@ -932,7 +925,7 @@ function stopMoving() {
 
 function updateTagPosition(box) {
   const idx = parseInt(box.dataset.index);
-  if (isNaN(idx) || idx < 0 || idx >= tagData.length) return;
+  if (isNaN(idx)) return;
   
   const x = parseInt(box.style.left);
   const y = parseInt(box.style.top);
@@ -947,7 +940,7 @@ function updateTagPosition(box) {
 
 function updateTagData(box) {
   const idx = parseInt(box.dataset.index);
-  if (isNaN(idx) || idx < 0 || idx >= tagData.length) return;
+  if (isNaN(idx)) return;
   
   debug.log(`Updating tag data for index ${idx}`);
   tagData[idx].x = parseInt(box.style.left);
@@ -966,12 +959,6 @@ function saveTag() {
   const idx = presetDropdown.value;
   if (!currentBox || idx === '') {
     debug.log('Save tag attempted with no box or selection');
-    popup.style.display = 'none';
-    if (currentBox) {
-      currentBox.remove();
-      currentBox = null;
-    }
-    showStatusMessage('⚠️ Please select a violation type', 3000);
     return;
   }
 
@@ -1016,16 +1003,6 @@ function updateTagLog() {
       <div class="tag-codes">${tag.codes.join(', ')}</div>
       <div class="tag-position">(${tag.x}, ${tag.y}) | ${tag.width}×${tag.height}</div>
     `;
-    
-    // Add click-to-select functionality
-    div.addEventListener('click', () => {
-      const boxElement = document.querySelector(`.draw-box[data-index="${index}"]`);
-      if (boxElement) {
-        selectBox(boxElement, false);
-        boxElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    });
-    
     tagLog.appendChild(div);
   });
 }
@@ -1059,9 +1036,7 @@ function exportToCSV() {
     
     tags.forEach(t => {
       const severity = t.severity || "🟡";
-      const sanitizedLabel = t.label ? t.label.replace(/"/g, '""') : '';
-      const codesFormatted = t.codes ? t.codes.join(';') : '';
-      csv += `"${img}","${severity}","${sanitizedLabel}","${codesFormatted}",${t.x},${t.y},${t.width},${t.height}\n`;
+      csv += `"${img}","${severity}","${t.label}",${t.codes.join(';')},${t.x},${t.y},${t.width},${t.height}\n`;
     });
   }
 
@@ -1070,17 +1045,17 @@ function exportToCSV() {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
-  link.download = `violations_export_${timestamp}.csv`;
+  link.download = 'violations.csv';
   link.click();
-  
-  // Clean up the object URL
-  setTimeout(() => {
-    URL.revokeObjectURL(url);
-  }, 100);
-  
-  showStatusMessage(`✅ CSV file exported with ${totalTags} violations`);
+  showStatusMessage('✅ CSV file exported');
 }
+
+
+
+
+
+
+
 
 // Save all progress to localStorage
 function saveAllProgress() {
@@ -1126,10 +1101,6 @@ function clearImageData() {
     return;
   }
   
-  if (!confirm(`Are you sure you want to clear all violation tags for ${imageName}?`)) {
-    return;
-  }
-  
   debug.log(`Clearing data for image: ${imageName}`);
   
   // Complete cleanup sequence
@@ -1138,7 +1109,9 @@ function clearImageData() {
   saveAllProgress();
   
   tagData = [];
+  currentHints = [];
   updateTagLog();
+  sidebarHints.innerHTML = 'Upload image to see violations.';
   
   showStatusMessage(`✅ All data for ${imageName} cleared`);
 }
@@ -1172,10 +1145,6 @@ function deleteSelectedBoxes() {
   
   if (selectedBoxes.length === 0) {
     showStatusMessage('⚠️ No boxes selected');
-    return;
-  }
-  
-  if (selectedBoxes.length > 1 && !confirm(`Delete ${selectedBoxes.length} selected boxes?`)) {
     return;
   }
   
@@ -1229,32 +1198,142 @@ function showStatusMessage(message, duration = 3000) {
   debug.log(`Status message: ${message}`);
   statusMessage.textContent = message;
   statusMessage.style.display = 'block';
-  
-  if (duration > 0) {
-    setTimeout(() => {
-      statusMessage.style.display = 'none';
-    }, duration);
-  }
+  setTimeout(() => {
+    statusMessage.style.display = 'none';
+  }, duration);
 }
 
 // --- DROPDOWN IMAGE SELECTOR LOGIC ---
 
-// Function already defined in the HTML
+const imageMap = {
+  "Equifax": {
+    "AL": ["2024-04-25-P57", "2024-04-25-P58"],
+    "BB": ["2024-04-25-P20"],
+    "BK": ["2024-04-25-P16", "2024-04-25-P17"],
+    "BY": ["2024-04-25-P34", "2024-04-25-P35"],
+    "C1": ["2024-04-25-P26"],
+    "C2": ["2024-04-25-P28"],
+    "CR": ["2024-04-25-P18", "2024-04-25-P19"],
+    "DB": ["2024-04-25-P30", "2024-04-25-P31"],
+    "DL": ["2024-04-25-P50", "2024-04-25-P51"],
+    "HD": ["2024-04-25-P32", "2024-04-25-P33"],
+    "JP": ["2024-04-25-P24"],
+    "MF": ["2024-04-25-P67"],
+    "SR": ["2024-04-25-P22"]
+  },
+  "Experian": {
+    "AL": ["2024-04-25-P05"],
+    "BB": ["2024-04-25-P08", "2024-04-25-P09"],
+    "BK": ["2024-04-25-P06"],
+    "BY": ["2024-04-25-P07"],
+    "C1": ["2024-04-25-P11"],
+    "C2": ["2024-04-25-P12"],
+    "CR": ["2024-04-25-P16", "2024-04-25-P17"],
+    "DB": ["2024-04-25-P22"],
+    "DL": ["2024-04-25-P21", "2024-04-25-P22"],
+    "HD": ["2024-04-25-P34", "2024-04-25-P35"],
+    "JP": ["2024-04-25-P23"],
+    "MF": ["2024-04-25-P25"],
+    "SR": ["2024-04-25-P31"]
+  },
+  "TransUnion": {
+    "AL": ["2024-04-25-P07"],
+    "BB": ["2024-04-25-P14"],
+    "BK": ["2024-04-25-P10"],
+    "BY": ["2024-04-25-P12"],
+    "C1": ["2024-04-25-P17"],
+    "C2": ["2024-04-25-P20"],
+    "CR": ["2024-04-25-P26"],
+    "DB": ["2024-04-25-P30"],
+    "DL": ["2024-04-25-P27"],
+    "JP": ["2024-04-25-P28"],
+    "MF": ["2024-04-25-P31"],
+    "SR": ["2024-04-25-P34"]
+  }
+};
 
-// Airtable Sync Functions
+function updateCreditorOptions() {
+  const bureau = document.getElementById("bureauSelect").value;
+  const creditorSelect = document.getElementById("creditorSelect");
+  creditorSelect.innerHTML = `<option disabled selected>Select Creditor</option>`;
+
+  if (!imageMap[bureau]) return;
+
+  Object.keys(imageMap[bureau]).forEach(creditor => {
+    const opt = document.createElement("option");
+    opt.value = creditor;
+    opt.textContent = creditor;
+    creditorSelect.appendChild(opt);
+  });
+
+  creditorSelect.disabled = false;
+  document.getElementById("dateSelect").innerHTML = '';
+  document.getElementById("dateSelect").disabled = true;
+}
+
+function updateDateOptions() {
+  const bureau = document.getElementById("bureauSelect").value;
+  const creditor = document.getElementById("creditorSelect").value;
+  const dateSelect = document.getElementById("dateSelect");
+
+  dateSelect.innerHTML = `<option disabled selected>Select Date + Page</option>`;
+
+  if (!imageMap[bureau] || !imageMap[bureau][creditor]) return;
+
+  imageMap[bureau][creditor].forEach(entry => {
+    const opt = document.createElement("option");
+    opt.value = `${creditor}-${bureau.charAt(0).toUpperCase()}${bureau.slice(1,2)}-${entry}.png`;
+    opt.textContent = entry;
+    dateSelect.appendChild(opt);
+  });
+
+  dateSelect.disabled = false;
+}
+
+function loadSelectedImage() {
+  const bureau = document.getElementById("bureauSelect").value;
+  const selectedFilename = document.getElementById("dateSelect").value;
+
+  if (!bureau || !selectedFilename) {
+    alert("Please select all fields.");
+    return;
+  }
+
+  const path = `${bureau.charAt(0).toUpperCase() + bureau.slice(1).toLowerCase()}/${selectedFilename}`;
+  imageName = selectedFilename;
+  
+  // Clear existing data first
+  clearAllBoxes();
+  tagData = [];
+  currentHints = [];
+  updateTagLog();
+  sidebarHints.innerHTML = 'Upload image to see violations.';
+  
+  document.getElementById("report-img").src = path;
+  showStatusMessage(`✅ Loaded: ${path}`);
+  
+  // Load hints for the new image
+  loadHintsForImage();
+  initViolationDropdown();
+}
+
+
+
+
+
+
+// Airtable Sync Settings
+const AIRTABLE_TOKEN = 'patiiNzMeWbsIHD29.b5c3d562339758fef9d454a5f7b25aa5702f10a8e0d1506d8682de7ddbf80e77';
+const AIRTABLE_BASE_ID = 'apppDRYBhN8W65aL5';
+const AIRTABLE_TABLE_NAME = 'ExportedViolations';
+
 async function sendToAirtable() {
   if (!Object.keys(allImageData).length) {
     alert("No violation tags to sync.");
     return;
   }
-  
-  if (!confirm("Sync all violation tags to Airtable? This may take a moment.")) {
-    return;
-  }
 
-  showStatusMessage('⏳ Syncing to Airtable...', 0);
   let totalSent = 0;
-  let totalErrors = 0;
 
   for (const [imgName, tags] of Object.entries(allImageData)) {
     for (const tag of tags) {
@@ -1267,8 +1346,7 @@ async function sendToAirtable() {
           "X": tag.x,
           "Y": tag.y,
           "Width": tag.width,
-          "Height": tag.height,
-          "DateAdded": new Date().toISOString()
+          "Height": tag.height
         }
       };
 
@@ -1282,112 +1360,18 @@ async function sendToAirtable() {
           body: JSON.stringify(record)
         });
 
-        if (!res.ok) {
-          throw new Error(`Airtable error: ${res.statusText}`);
-        }
-        
+        if (!res.ok) throw new Error(`Airtable error: ${res.statusText}`);
         totalSent++;
-        showStatusMessage(`⏳ Syncing: ${totalSent} records sent...`, 0);
 
       } catch (err) {
         console.error("Failed to send to Airtable:", err);
-        totalErrors++;
+        alert(`❌ Error sending some records. Check console.`);
+        return;
       }
     }
   }
 
-  if (totalErrors > 0) {
-    showStatusMessage(`⚠️ Sync completed with ${totalErrors} errors. ${totalSent} records synced.`, 5000);
-  } else {
-    showStatusMessage(`✅ Successfully synced ${totalSent} violations to Airtable.`, 5000);
-  }
-}
-
-// Handle keyboard shortcuts
-function handleKeyboardShortcuts(e) {
-  // Escape to cancel current action
-  if (e.key === 'Escape') {
-    if (popup.style.display !== 'none') {
-      cancelTag();
-    } else {
-      clearSelection();
-    }
-  }
-  
-  // Delete key to remove selected boxes
-  if (e.key === 'Delete' || e.key === 'Backspace') {
-    if (document.querySelectorAll('.draw-box.selected').length > 0) {
-      deleteSelectedBoxes();
-    }
-  }
-  
-  // Ctrl+S for save
-  if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
-    e.preventDefault();
-    saveProgress();
-  }
-  
-  // Ctrl+A for select all
-  if (e.key === 'a' && (e.ctrlKey || e.metaKey)) {
-    e.preventDefault();
-    document.querySelectorAll('.draw-box').forEach(box => {
-      box.classList.add('selected');
-      addResizeHandles(box);
-    });
-  }
-}
-
-// Cache image data to improve responsiveness
-function cacheImageForOffline() {
-  if (!imageName || !image.src) return;
-  
-  debug.log(`Caching image data for ${imageName}`);
-  
-  try {
-    // Store current image data URL in localStorage for faster loading
-    const canvas = document.createElement('canvas');
-    canvas.width = image.naturalWidth;
-    canvas.height = image.naturalHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(image, 0, 0);
-    
-    const imageCache = JSON.parse(localStorage.getItem('violationTagsImageCache') || '{}');
-    imageCache[imageName] = canvas.toDataURL('image/png');
-    
-    // Only store a reasonable number of images to avoid localStorage overflow
-    const maxCachedImages = 5;
-    const keys = Object.keys(imageCache);
-    if (keys.length > maxCachedImages) {
-      // Remove oldest cached images
-      keys.slice(0, keys.length - maxCachedImages).forEach(key => {
-        delete imageCache[key];
-      });
-    }
-    
-    localStorage.setItem('violationTagsImageCache', JSON.stringify(imageCache));
-    debug.log(`Image cached successfully: ${imageName}`);
-  } catch (e) {
-    debug.log(`Failed to cache image: ${e.message}`);
-    // Silently fail - this is just an optimization
-  }
-}
-
-// Try to load cached image if available
-function tryLoadCachedImage() {
-  if (!imageName) return false;
-  
-  try {
-    const imageCache = JSON.parse(localStorage.getItem('violationTagsImageCache') || '{}');
-    if (imageCache[imageName]) {
-      debug.log(`Found cached image for ${imageName}`);
-      image.src = imageCache[imageName];
-      return true;
-    }
-  } catch (e) {
-    debug.log(`Error loading cached image: ${e.message}`);
-  }
-  
-  return false;
+  alert(`✅ Successfully sent ${totalSent} violations to Airtable.`);
 }
 
 // Set up all event listeners
@@ -1401,29 +1385,14 @@ function setupEventListeners() {
   document.getElementById('clearImageData').addEventListener('click', clearImageData);
   saveButton.addEventListener('click', saveTag);
   cancelButton.addEventListener('click', cancelTag);
+
   document.getElementById('syncToAirtable').addEventListener('click', sendToAirtable);
-  
-  // Keyboard shortcuts
-  document.addEventListener('keydown', handleKeyboardShortcuts);
 
   // Drawing and selection handlers
   imageContainer.addEventListener('mousedown', startDrawingOrSelecting);
   imageContainer.addEventListener('mousemove', handleMouseMove);
   imageContainer.addEventListener('mouseup', endAction);
   document.addEventListener('mousemove', resizeBox);
-  
-  // Window event handlers
-  window.addEventListener('beforeunload', (e) => {
-    if (imageName) {
-      saveTagsForCurrentImage();
-    }
-  });
-  
-  // Image loading complete handler
-  image.addEventListener('load', () => {
-    // Once image is fully loaded, try to cache it
-    setTimeout(cacheImageForOffline, 1000);
-  });
 }
 
 // Initialize the application when DOM is loaded
@@ -1437,3 +1406,6 @@ debug.log('Violation Tagger script loaded');
 </script>
 </body>
 </html>
+
+
+
