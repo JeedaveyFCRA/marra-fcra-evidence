@@ -22,123 +22,207 @@
     }
 
     #right-panel {
-      flex: 2;
-      padding: 20px;
-      box-sizing: border-box;
-      overflow-y: auto;
-      border-right: 1px solid #ccc;
-    }
-
-    #selector-panel {
-      width: 320px;
+      flex: 1;
       padding: 15px;
-      background-color: #fefefe;
-      border-left: 1px solid #ccc;
       box-sizing: border-box;
       overflow-y: auto;
-    }
-
-    .control-panel {
-      margin-bottom: 20px;
-    }
-
-    .control-panel button,
-    .file-input-button {
-      display: inline-block;
-      margin-bottom: 8px;
-      margin-right: 4px;
-      padding: 8px 10px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-
-    .status-message {
-      margin-bottom: 15px;
-      font-style: italic;
-      font-size: 12px;
-      color: #666;
-    }
-
-    #sidebar-hints {
-      font-size: 13px;
-      margin-bottom: 15px;
-    }
-
-    #tag-log {
-      font-size: 12px;
-      border-top: 1px solid #ccc;
-      padding-top: 10px;
     }
 
     #image-container {
       position: relative;
       width: 810px;
       height: 920px;
-      overflow: hidden;
       border: 1px solid #ccc;
-      margin: 0 auto;
+      margin-top: 10px;
+      background-color: white;
+      cursor: crosshair;
+      user-select: none;
+      border-radius: 12px;
+      overflow: hidden;
     }
 
     #report-img {
       position: absolute;
-      left: 0;
-      top: 0;
-      width: 810px;
-      height: 920px;
-      z-index: 1;
+      width: 778px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 0;
+      pointer-events: none;
     }
 
-    .tag-box {
+    .draw-box {
       position: absolute;
-      border: 2px solid red;
-      border-radius: 8px;
-      box-sizing: border-box;
-      z-index: 2;
-    }
-
-    .tag-label {
-      background: white;
-      padding: 2px 6px;
+      border: 2px dashed red;
+      background-color: rgba(255, 0, 0, 0.1);
+      z-index: 10;
       border-radius: 4px;
-      font-size: 11px;
-      border: 1px solid #999;
-      position: absolute;
-      top: -20px;
-      left: 0;
     }
 
-    .selected {
-      border-style: dashed;
+    .draw-box.selected {
+      border: 2px solid blue;
+      background-color: rgba(0, 0, 255, 0.1);
     }
+
+    .resize-handle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: white;
+      border: 1px solid #333;
+      z-index: 20;
+      border-radius: 50%;
+    }
+
+    .top-left { top: -3px; left: -3px; cursor: nwse-resize; }
+    .top-right { top: -3px; right: -3px; cursor: nesw-resize; }
+    .bottom-left { bottom: -3px; left: -3px; cursor: nesw-resize; }
+    .bottom-right { bottom: -3px; right: -3px; cursor: nwse-resize; }
 
     #popup {
-      margin-top: 10px;
-      display: none;
-      background-color: #f0f0f0;
+      position: absolute;
+      z-index: 20;
+      background: white;
       border: 1px solid #ccc;
-      border-radius: 6px;
-      padding: 12px;
+      padding: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      display: none;
       width: 260px;
     }
 
-    .file-input-button {
-      background-color: #f0c040;
-      border: none;
+    /* === COMPACT "WHAT TO LOOK FOR" SECTION === */
+    #sidebar-hints {
+      font-size: 12px;
+      line-height: 1.3;
+      padding: 8px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      margin-bottom: 10px;
     }
 
-    select {
-      font-size: 14px;
-      padding: 4px;
+    #sidebar-hints ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
     }
+
+    #sidebar-hints li {
+      margin-bottom: 4px;
+    }
+
+    .hint-box {
+      padding: 4px 8px;
+      margin-bottom: 4px;
+      border-left: 3px solid #007bff;
+      background: #f9f9f9;
+      border-radius: 3px;
+    }
+
+    .hint-box.severe {
+      border-left: 3px solid #d9534f;
+      background: #fff5f5;
+    }
+
+    .hint-box.serious {
+      border-left: 3px solid #f0ad4e;
+      background: #fffaf0;
+    }
+
+    .hint-box.minor {
+      border-left: 3px solid #f7e360;
+      background: #fefef7;
+    }
+
+    .hint-label {
+      font-weight: bold;
+    }
+
+    .hint-codes {
+      font-size: 11px;
+      color: #666;
+    }
+
+    #tag-log {
+      margin-top: 10px;
+    }
+
+    .tag-entry {
+      margin-bottom: 6px;
+      padding: 6px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .tag-position {
+      font-size: 11px;
+      color: #999;
+    }
+
+    .control-panel {
+      margin-bottom: 10px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 4px 8px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .file-input-button {
+      padding: 4px 8px;
+      cursor: pointer;
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+
+    .status-message {
+      font-size: 12px;
+      padding: 5px 10px;
+      background: #e8f4ff;
+      border-radius: 4px;
+      margin-top: 5px;
+      display: none;
+    }
+#selector-panel {
+  width: 250px;
+  padding: 15px;
+  background-color: #fefefe;
+  border-left: 1px solid #ccc;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
   </style>
 </head>
+
 <body>
 <!-- LEFT PANEL -->
 <div id="left-panel">
-  <div id="sidebar-hints">
-    <strong>What to Look For</strong>
-    <p>Upload image to see violations.</p>
+  <div class="control-panel">
+    <label for="loadImage" class="file-input-button">📁 Load Image</label>
+    <input type="file" id="loadImage" accept="image/png,image/jpeg,image/gif" style="display:none" />
+    <button id="exportCSV">📤 Export CSV</button>
+    <button id="toggleMultiSelect">🔘 Multi: OFF</button>
+    <button id="deleteSelected">🗑️ Delete Selected</button>
+    <button id="clearImageData">🧹 Clear Image Data</button>
+    <button id="saveProgress">💾 Save Progress</button>
+    <button id="syncToAirtable">📡 Sync to Airtable</button>
   </div>
+
+  <div id="status-message" class="status-message"></div>
+
+  <!-- What to Look For -->
+  <div id="sidebar-hints">
+    Upload image to see violations.
+  </div>
+
+  <!-- Violation Tag Log -->
   <div id="tag-log"></div>
 </div>
 
@@ -160,26 +244,6 @@
 
 <!-- RIGHT DROPDOWN PANEL -->
 <div id="selector-panel">
-  <div class="control-panel">
-    <label for="loadImage" class="file-input-button">📁 Load Image</label>
-    <input type="file" id="loadImage" accept="image/png,image/jpeg,image/gif" style="display:none" />
-    <button id="exportCSV">📤 Export CSV</button>
-    <button id="toggleMultiSelect">🔘 Multi: OFF</button>
-    <button id="deleteSelected">🗑️ Delete Selected</button>
-    <button id="clearImageData">🧹 Clear Image Data</button>
-    <button id="saveProgress">💾 Save Progress</button>
-    <button id="syncToAirtable">📡 Sync to Airtable</button>
-  </div>
-
-
-
-
-
-
-
-
-
-
   <h3 style="font-size:14px;">🗂️ Select Credit Report Page</h3>
   <label>Bureau:
     <select id="bureauSelect" onchange="updateCreditorOptions()" style="width:100%;">
@@ -201,348 +265,1125 @@
   <button onclick="loadSelectedImage()">📷 Load PNG</button>
 </div>
 
+
+
+
+
+
+
+
+
 <script>
-  const imageMap = {
-    "Equifax": {
-      "AL": ["2024-04-25-P57", "2024-04-25-P58"],
-      "BB": ["2024-04-25-P20"],
-      "BK": ["2024-04-25-P16", "2024-04-25-P17"],
-      "BY": ["2024-04-25-P34", "2024-04-25-P35"],
-      "C1": ["2024-04-25-P26"],
-      "C2": ["2024-04-25-P28"],
-      "CR": ["2024-04-25-P18", "2024-04-25-P19"],
-      "DB": ["2024-04-25-P30", "2024-04-25-P31"],
-      "DL": ["2024-04-25-P50", "2024-04-25-P51"],
-      "HD": ["2024-04-25-P32", "2024-04-25-P33"],
-      "JP": ["2024-04-25-P24"],
-      "MF": ["2024-04-25-P67"],
-      "SR": ["2024-04-25-P22"]
+// Bureau-specific FCRA violation hints
+const hintLookup = {
+  "EQ": [
+    {
+      label: "Account Status: INCLUDED_IN_CHAPTER_13",
+      covers: ["§1681c(f)", "§1681e(b)"],
+      action: "Account misreported as active in Chapter 13 after discharge",
+      severity: "🔴"
     },
-    "Experian": {
-      "AL": ["2024-04-25-P05"],
-      "BB": ["2024-04-25-P08", "2024-04-25-P09"],
-      "BK": ["2024-04-25-P06"],
-      "BY": ["2024-04-25-P07"],
-      "C1": ["2024-04-25-P11"],
-      "C2": ["2024-04-25-P12"],
-      "CR": ["2024-04-25-P16", "2024-04-25-P17"],
-      "DB": ["2024-04-25-P22"],
-      "DL": ["2024-04-25-P21", "2024-04-25-P22"],
-      "HD": ["2024-04-25-P34", "2024-04-25-P35"],
-      "JP": ["2024-04-25-P23"],
-      "MF": ["2024-04-25-P25"],
-      "SR": ["2024-04-25-P31"]
+    {
+      label: "Reported Balance: $0",
+      covers: ["§1681e(b)", "§1681c(f)"],
+      action: "Zero balance misreported with discharge context",
+      severity: "🔴"
     },
-    "TransUnion": {
-      "AL": ["2024-04-25-P07"],
-      "BB": ["2024-04-25-P14"],
-      "BK": ["2024-04-25-P10"],
-      "BY": ["2024-04-25-P12"],
-      "C1": ["2024-04-25-P17"],
-      "C2": ["2024-04-25-P20"],
-      "CR": ["2024-04-25-P26"],
-      "DB": ["2024-04-25-P30"],
-      "DL": ["2024-04-25-P27"],
-      "JP": ["2024-04-25-P28"],
-      "MF": ["2024-04-25-P31"],
-      "SR": ["2024-04-25-P34"]
+    {
+      label: "Available Credit",
+      covers: ["§1681e(b)"],
+      action: "Available credit field inaccurate or blank",
+      severity: "🟠"
+    },
+    {
+      label: "High Credit",
+      covers: ["§1681e(b)"],
+      action: "High credit not accurately reflected",
+      severity: "🟠"
+    },
+    {
+      label: "Credit Limit",
+      covers: ["§1681e(b)"],
+      action: "Missing or inaccurate limit field",
+      severity: "🟠"
+    },
+    {
+      label: "Balance: $0",
+      covers: ["§1681e(b)", "§1681c(f)"],
+      action: "Blank or false balance after discharge",
+      severity: "🔴"
+    },
+    {
+      label: "Date Reported: Oct 25, 2018",
+      covers: ["§1681c(a)(4)", "§1681e(b)"],
+      action: "Frozen/stale date from pre-discharge era",
+      severity: "🔴"
+    },
+    {
+      label: "Bankruptcy Chapter 13",
+      covers: ["§1681c(f)", "§1681e(b)"],
+      action: "Incorrect bankruptcy reporting",
+      severity: "🔴"
+    },
+    {
+      label: "Bankruptcy Completed",
+      covers: ["§1681e(b)"],
+      action: "Status not updated after discharge",
+      severity: "🔴"
     }
+  ],
+  "TU": [
+    {
+      label: "Date Updated: 02/19/2024",
+      covers: ["§1681s-2(a)(1)(A)", "§1681e(b)"],
+      action: "Date updated but data still inaccurate",
+      severity: "🔴"
+    },
+    {
+      label: "Pay Status: >Account Included in Bankruptcy<",
+      covers: ["§1681c(f)", "§1681e(b)"],
+      action: "Misleading status post-discharge",
+      severity: "🔴"
+    },
+    {
+      label: "Date Closed: 02/19/2024",
+      covers: ["§1681s-2(a)(1)(A)", "§1681e(b)"],
+      action: "Wrong or backdated closure",
+      severity: "🔴"
+    },
+    {
+      label: "Remarks: CHAPTER 13 BANKRUPTCY",
+      covers: ["§1681c(f)", "§1681e(b)"],
+      action: "Misreported bankruptcy notation",
+      severity: "🔴"
+    },
+    {
+      label: "On Record Until: 09/2025",
+      covers: ["§1681e(b)", "§1681c(a)(1)"],
+      action: "Incorrect or outdated removal date",
+      severity: "🔴"
+    }
+  ],
+  "EX": [
+    {
+      label: "Status: Discharged through Bankruptcy Chapter 13",
+      covers: ["§1681s-2(a)(1)(A)", "§1681c(a)(4)", "§1681e(b)"],
+      action: "Status fails to reflect discharge update",
+      severity: "🔴"
+    },
+    {
+      label: "Status Updated: Oct 2018",
+      covers: ["§1681c(a)(4)", "§1681s-2(a)(1)(A)"],
+      action: "Stale 'Status Updated' field from years earlier",
+      severity: "🔴"
+    },
+    {
+      label: "Balance: -",
+      covers: ["§1681e(b)", "§1681c(f)"],
+      action: "Missing balance value post-discharge",
+      severity: "🔴"
+    },
+    {
+      label: "Balance Updated: -",
+      covers: ["§1681e(b)", "§1681c(a)(4)"],
+      action: "No recent balance update post-discharge",
+      severity: "🔴"
+    },
+    {
+      label: "Recent Payment: -",
+      covers: ["§1681e(b)"],
+      action: "Missing/blank payment activity",
+      severity: "🟠"
+    },
+    {
+      label: "Monthly Payment: -",
+      covers: ["§1681e(b)"],
+      action: "Monthly payment field missing",
+      severity: "🟠"
+    },
+    {
+      label: "Highest Balance: -",
+      covers: ["§1681e(b)"],
+      action: "Missing highest balance field",
+      severity: "🟠"
+    },
+    {
+      label: "On Record Until: Oct 2025",
+      covers: ["§1681e(b)", "§1681c(a)(1)"],
+      action: "Incorrect or outdated removal date",
+      severity: "🔴"
+    }
+  ]
+};
+
+// Debug configuration
+const debug = {
+  imageLoading: true,
+  log: function(message) {
+    if (this.imageLoading) console.log('[DEBUG]', message);
+  }
+};
+
+// Global variables
+let currentBox = null;
+let selectedBox = null;
+let drawing = false;
+let resizing = false;
+let imageName = '';
+let tagData = [];
+let currentHints = [];
+let dragStartX = 0;
+let dragStartY = 0;
+let resizeHandle = null;
+let originalBox = { x: 0, y: 0, width: 0, height: 0 };
+let allImageData = {};
+let isMultiSelectMode = false;
+
+// DOM elements
+const imageContainer = document.getElementById('image-container');
+const image = document.getElementById('report-img');
+const popup = document.getElementById('popup');
+const presetDropdown = document.getElementById('violationPreset');
+const saveButton = document.getElementById('saveTag');
+const cancelButton = document.getElementById('cancelTag');
+const deleteButton = document.getElementById('deleteSelected');
+const toggleMultiSelectBtn = document.getElementById('toggleMultiSelect');
+const saveProgressButton = document.getElementById('saveProgress');
+const sidebarHints = document.getElementById('sidebar-hints');
+const tagLog = document.getElementById('tag-log');
+const statusMessage = document.getElementById('status-message');
+const fileInput = document.getElementById('loadImage');
+
+// Initialize the application
+function init() {
+  debug.log('Initializing application...');
+  loadAllProgress();
+  setupEventListeners();
+  showStatusMessage('✅ Violation Tagger ready!', 2000);
+  
+  // Only set error handler after initial load
+  setTimeout(() => {
+    image.onerror = function() {
+      debug.log('Image load error occurred');
+      showStatusMessage('⚠️ Failed to load image', 5000);
+    };
+  }, 1000);
+}
+</script>
+
+
+
+
+
+
+
+
+<script>
+// Toggle multi-select mode
+function toggleMultiSelectMode() {
+  isMultiSelectMode = !isMultiSelectMode;
+  toggleMultiSelectBtn.textContent = `🔘 Multi: ${isMultiSelectMode ? 'ON' : 'OFF'}`;
+  showStatusMessage(`Multi-select mode: ${isMultiSelectMode ? 'ON' : 'OFF'}`);
+}
+
+// Handle image upload with enhanced error handling
+function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) {
+    debug.log('No file selected');
+    return;
+  }
+
+  debug.log(`File selected: ${file.name}, type: ${file.type}, size: ${file.size} bytes`);
+
+  // Validate image type
+  if (!file.type.match('image.*')) {
+    debug.log('Invalid file type selected');
+    showStatusMessage('⚠️ Please select an image file (PNG, JPEG, GIF)', 5000);
+    return;
+  }
+
+  // Save current data before loading new image
+  if (imageName) {
+    saveTagsForCurrentImage();
+  }
+  
+  // Clear all existing violation boxes and reset state
+  clearAllBoxes();
+  tagData = [];
+  currentHints = [];
+  updateTagLog();
+  sidebarHints.innerHTML = 'Upload image to see violations.';
+  
+  // Set new image name
+  imageName = file.name;
+  debug.log(`Loading new image: ${imageName}`);
+
+  const reader = new FileReader();
+  
+  reader.onloadstart = () => {
+    debug.log('Starting file read...');
+    showStatusMessage('⏳ Loading image...', 0);
+  };
+  
+  reader.onload = function(event) {
+    debug.log('FileReader load event triggered');
+    image.src = event.target.result;
+    showStatusMessage('🖼️ Rendering image...', 0);
+  };
+  
+  reader.onerror = function() {
+    debug.log('FileReader error occurred');
+    showStatusMessage('⚠️ Error reading image file', 5000);
+  };
+  
+  reader.onloadend = function() {
+    debug.log('FileReader load completed');
   };
 
-  function updateCreditorOptions() {
-    const bureau = document.getElementById("bureauSelect").value;
-    const creditorSelect = document.getElementById("creditorSelect");
-    creditorSelect.innerHTML = `<option disabled selected>Select Creditor</option>`;
-    if (!imageMap[bureau]) return;
-    Object.keys(imageMap[bureau]).forEach(creditor => {
-      const opt = document.createElement("option");
-      opt.value = creditor;
-      opt.textContent = creditor;
-      creditorSelect.appendChild(opt);
-    });
-    creditorSelect.disabled = false;
-    document.getElementById("dateSelect").innerHTML = '';
-    document.getElementById("dateSelect").disabled = true;
+  image.onload = function() {
+    debug.log('Image onload event triggered');
+    
+    // Full cleanup before loading new content
+    clearAllBoxes();
+    tagData = [];
+    
+    loadHintsForImage();
+    initViolationDropdown();
+    clearSelection();
+    loadTagsForCurrentImage();
+    
+    showStatusMessage(`✅ Image loaded: ${imageName}`);
+    debug.log(`Image dimensions: ${image.naturalWidth}x${image.naturalHeight}`);
+    debug.log(`Rendered dimensions: ${image.width}x${image.height}`);
+  };
+
+  reader.readAsDataURL(file);
+}
+
+// Load hints based on image name with improved bureau detection
+function loadHintsForImage() {
+  if (!imageName) {
+    debug.log('No image name available for hint loading');
+    currentHints = [];
+    return;
   }
 
-  function updateDateOptions() {
-    const bureau = document.getElementById("bureauSelect").value;
-    const creditor = document.getElementById("creditorSelect").value;
-    const dateSelect = document.getElementById("dateSelect");
-    dateSelect.innerHTML = `<option disabled selected>Select Date + Page</option>`;
-    if (!imageMap[bureau] || !imageMap[bureau][creditor]) return;
-    imageMap[bureau][creditor].forEach(entry => {
-      const opt = document.createElement("option");
-      opt.value = `${creditor}-${bureau.substring(0, 2).toUpperCase()}-${entry}.png`;
-      opt.textContent = entry;
-      dateSelect.appendChild(opt);
-    });
-    dateSelect.disabled = false;
+  // Case-insensitive bureau detection
+  const upperName = imageName.toUpperCase();
+  let bureauCode = '';
+  
+  if (upperName.includes('-EQ-')) bureauCode = 'EQ';
+  else if (upperName.includes('-EX-')) bureauCode = 'EX';
+  else if (upperName.includes('-TU-')) bureauCode = 'TU';
+  else if (upperName.includes('EQUIFAX')) bureauCode = 'EQ';
+  else if (upperName.includes('EXPERIAN')) bureauCode = 'EX';
+  else if (upperName.includes('TRANSUNION')) bureauCode = 'TU';
+
+  debug.log(`Detected bureau code: ${bureauCode || 'None'} from filename: ${imageName}`);
+  currentHints = bureauCode ? [...hintLookup[bureauCode]] : [];
+  updateHintsPanel();
+}
+
+// Update hints panel display
+function updateHintsPanel() {
+  debug.log(`Updating hints panel with ${currentHints.length} hints`);
+  
+  if (currentHints.length === 0) {
+    sidebarHints.innerHTML = '<div style="color:#666;">No specific violations detected for this bureau.</div>';
+    return;
   }
 
-  function loadSelectedImage() {
-    const bureau = document.getElementById("bureauSelect").value;
-    const selectedFilename = document.getElementById("dateSelect").value;
-    if (!bureau || !selectedFilename) {
-      alert("Please select all fields.");
-      return;
-    }
-    const imagePath = `${bureau}/${selectedFilename}`;
-    imageName = selectedFilename;
-    document.getElementById("report-img").src = imagePath;
-    showStatusMessage(`✅ Loaded: ${imagePath}`);
+  sidebarHints.innerHTML = currentHints.map(hint => {
+    const severityClass = hint.severity === "🔴" ? "severe" :
+                         hint.severity === "🟠" ? "serious" : "minor";
+
+    return `
+      <div class="hint-box ${severityClass}">
+        <div class="hint-label">${hint.label}</div>
+        <div class="hint-action">${hint.action}</div>
+        <div class="hint-codes">${hint.covers.join(', ')}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Initialize violation dropdown
+function initViolationDropdown() {
+  debug.log(`Initializing violation dropdown with ${currentHints.length} options`);
+  presetDropdown.innerHTML = '<option disabled selected>Select a violation</option>';
+  currentHints.forEach((hint, index) => {
+    const option = document.createElement('option');
+    option.value = index;
+    option.textContent = `${hint.severity || '🟡'} ${hint.label} (${hint.covers.length} codes)`;
+    presetDropdown.appendChild(option);
+  });
+}
+</script>
+
+
+
+
+
+
+
+<script>
+// Save tags for current image
+function saveTagsForCurrentImage() {
+  if (!imageName) {
+    debug.log('No image name to save tags for');
+    return;
   }
+  debug.log(`Saving tags for image: ${imageName}`);
+  allImageData[imageName] = [...tagData];
+  saveAllProgress();
+}
 
-
-
-
-
-
-
-  // Global Variables
-  let isMultiSelect = false;
-  let tags = [];
-  let currentBox = null;
-  let imageName = "";
-
-  // Utility Functions
-  function showStatusMessage(msg) {
-    document.getElementById("status-message").textContent = msg;
+// Load tags for current image
+function loadTagsForCurrentImage() {
+  debug.log(`Loading tags for image: ${imageName}`);
+  loadAllProgress();
+  
+  // Clear existing data first
+  tagData = [];
+  clearAllBoxes();
+  
+  if (allImageData[imageName]) {
+    debug.log(`Found ${allImageData[imageName].length} saved tags for this image`);
+    tagData = [...allImageData[imageName]];
+    renderSavedTags();
+  } else {
+    debug.log('No saved tags found for this image');
   }
+  
+  updateTagLog();
+}
 
-  function createTagElement(tag, index) {
-    const box = document.createElement("div");
-    box.className = "tag-box";
-    box.style.top = `${tag.y}px`;
+// Render saved tags on the image
+function renderSavedTags() {
+  debug.log(`Rendering ${tagData.length} saved tags`);
+  document.querySelectorAll('.draw-box').forEach(box => box.remove());
+  
+  tagData.forEach((tag, index) => {
+    const box = document.createElement('div');
+    box.className = 'draw-box';
     box.style.left = `${tag.x}px`;
+    box.style.top = `${tag.y}px`;
     box.style.width = `${tag.width}px`;
     box.style.height = `${tag.height}px`;
-    box.style.borderColor = getSeverityColor(tag.severity);
+    box.title = `${tag.label}\n${tag.codes.join(', ')}`;
     box.dataset.index = index;
-    box.addEventListener("click", (e) => {
-      if (!isMultiSelect) {
-        document.querySelectorAll(".tag-box.selected").forEach(el => el.classList.remove("selected"));
-      }
-      box.classList.toggle("selected");
-      e.stopPropagation();
-    });
+    imageContainer.appendChild(box);
+  });
+}
 
-    const label = document.createElement("div");
-    label.className = "tag-label";
-    label.textContent = tag.label;
-    label.style.borderColor = getSeverityColor(tag.severity);
-    box.appendChild(label);
-
-    document.getElementById("image-container").appendChild(box);
+// Drawing and selection functions with enhanced position tracking
+function startDrawingOrSelecting(e) {
+  debug.log(`Mouse down event at (${e.clientX}, ${e.clientY})`);
+  
+  if (e.target.classList.contains('resize-handle')) {
+    startResizing(e);
+    return;
   }
 
-  function getSeverityColor(severity) {
-    if (severity === "🔴") return "red";
-    if (severity === "🟠") return "orange";
-    if (severity === "🟡") return "gold";
-    return "black";
+  if (e.target.classList.contains('draw-box')) {
+    selectBox(e.target, e.shiftKey || isMultiSelectMode);
+    startMoving(e);
+    return;
   }
 
-  function refreshTagLog() {
-    const tagLog = document.getElementById("tag-log");
-    tagLog.innerHTML = tags.map((tag, i) => {
-      return `<div>#${i + 1} – ${tag.label} (${tag.codes.join(", ")})</div>`;
-    }).join("");
-  }
+  startDrawing(e);
+}
 
-  // Drawing Logic
-  document.getElementById("image-container").addEventListener("mousedown", function (e) {
-    if (e.target.id !== "report-img") return;
-    const containerRect = this.getBoundingClientRect();
-    const startX = e.clientX - containerRect.left;
-    const startY = e.clientY - containerRect.top;
+function startDrawing(e) {
+  debug.log(`Starting new box drawing`);
+  if (!isMultiSelectMode) clearSelection();
+  drawing = true;
+  const rect = imageContainer.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
 
-    currentBox = {
-      x: startX,
-      y: startY,
-      width: 0,
-      height: 0
-    };
+  debug.log(`New box starting at (${x}, ${y})`);
 
-    const tempBox = document.createElement("div");
-    tempBox.className = "tag-box";
-    tempBox.style.left = `${startX}px`;
-    tempBox.style.top = `${startY}px`;
-    tempBox.style.width = `0px`;
-    tempBox.style.height = `0px`;
-    tempBox.style.borderColor = "blue";
-    tempBox.style.zIndex = "1000";
-    tempBox.id = "temp-tag-box";
-    this.appendChild(tempBox);
+  currentBox = document.createElement('div');
+  currentBox.className = 'draw-box';
+  currentBox.style.left = `${x}px`;
+  currentBox.style.top = `${y}px`;
+  currentBox.style.width = '0px';
+  currentBox.style.height = '0px';
+  currentBox.dataset.index = tagData.length;
+  imageContainer.appendChild(currentBox);
+}
 
-    const onMouseMove = (e2) => {
-      const curX = e2.clientX - containerRect.left;
-      const curY = e2.clientY - containerRect.top;
-      const width = Math.abs(curX - startX);
-      const height = Math.abs(curY - startY);
-      tempBox.style.width = `${width}px`;
-      tempBox.style.height = `${height}px`;
-      tempBox.style.left = `${Math.min(curX, startX)}px`;
-      tempBox.style.top = `${Math.min(curY, startY)}px`;
-    };
-
-    const onMouseUp = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-      document.getElementById("popup").style.display = "block";
-    };
-
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
-  });
-
-  // Violation Preset Dropdown (from hint table)
-  function populateViolationDropdown(hints) {
-    const dropdown = document.getElementById("violationPreset");
-    dropdown.innerHTML = "";
-    hints.forEach(h => {
-      const opt = document.createElement("option");
-      opt.value = h.label;
-      opt.textContent = `${h.label} – ${h.action}`;
-      opt.dataset.codes = h.covers.join(",");
-      opt.dataset.severity = h.severity;
-      dropdown.appendChild(opt);
-    });
-  }
-
-  document.getElementById("saveTag").addEventListener("click", () => {
-    const selected = document.getElementById("violationPreset").selectedOptions[0];
-    const tag = {
-      label: selected.value,
-      codes: selected.dataset.codes.split(","),
-      severity: selected.dataset.severity,
-      ...currentBox
-    };
-    tags.push(tag);
-    document.getElementById("popup").style.display = "none";
-    document.getElementById("temp-tag-box")?.remove();
-    createTagElement(tag, tags.length - 1);
-    refreshTagLog();
-    currentBox = null;
-  });
-
-  document.getElementById("cancelTag").addEventListener("click", () => {
-    document.getElementById("popup").style.display = "none";
-    document.getElementById("temp-tag-box")?.remove();
-    currentBox = null;
-  });
-
-
-
-
-
-
-  // Button Handlers
-  document.getElementById("deleteSelected").addEventListener("click", () => {
-    const selectedBoxes = document.querySelectorAll(".tag-box.selected");
-    selectedBoxes.forEach(box => {
-      const index = parseInt(box.dataset.index, 10);
-      tags[index] = null;
-      box.remove();
-    });
-    tags = tags.filter(Boolean);
-    refreshTagLog();
-  });
-
-  document.getElementById("clearImageData").addEventListener("click", () => {
-    document.querySelectorAll(".tag-box").forEach(el => el.remove());
-    tags = [];
-    refreshTagLog();
-  });
-
-  document.getElementById("toggleMultiSelect").addEventListener("click", () => {
-    isMultiSelect = !isMultiSelect;
-    document.getElementById("toggleMultiSelect").textContent = `🔘 Multi: ${isMultiSelect ? "ON" : "OFF"}`;
-  });
-
-  document.getElementById("exportCSV").addEventListener("click", () => {
-    const csv = tags.map(tag =>
-      [imageName, tag.label, tag.severity, ...tag.codes, tag.x, tag.y, tag.width, tag.height].join(",")
-    ).join("\n");
-
-    const blob = new Blob([csv], { type: "text/csv" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `${imageName.replace(".png", "")}_violations.csv`;
-    a.click();
-  });
-
-  document.getElementById("saveProgress").addEventListener("click", () => {
-    localStorage.setItem(`tags_${imageName}`, JSON.stringify(tags));
-    showStatusMessage("💾 Progress saved.");
-  });
-
-  document.getElementById("loadImage").addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      document.getElementById("report-img").src = reader.result;
-      imageName = file.name;
-      showStatusMessage(`✅ Loaded: ${file.name}`);
-    };
-    reader.readAsDataURL(file);
-  });
-
-  // Airtable Push Placeholder
-  document.getElementById("syncToAirtable").addEventListener("click", () => {
-    alert("📡 Airtable sync placeholder activated.");
-  });
-
-  // Load dropdown hints when image is loaded
-  document.getElementById("report-img").addEventListener("load", () => {
-    const bureauCode = imageName.includes("-EQ-") ? "EQ" :
-                       imageName.includes("-EX-") ? "EX" :
-                       imageName.includes("-TU-") ? "TU" : null;
-
-    if (!bureauCode) {
-      document.getElementById("sidebar-hints").innerHTML = "Image name missing bureau code (EQ, EX, TU)";
-      return;
+function handleMouseMove(e) {
+  if (drawing && currentBox) {
+    const rect = imageContainer.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const startX = parseInt(currentBox.style.left);
+    const startY = parseInt(currentBox.style.top);
+    
+    if (x < startX) {
+      currentBox.style.left = `${x}px`;
+      currentBox.style.width = `${startX - x}px`;
+    } else {
+      currentBox.style.width = `${x - startX}px`;
     }
+    
+    if (y < startY) {
+      currentBox.style.top = `${y}px`;
+      currentBox.style.height = `${startY - y}px`;
+    } else {
+      currentBox.style.height = `${y - startY}px`;
+    }
+  }
+}
 
-    const hints = hintLookup[bureauCode];
-    populateViolationDropdown(hints);
-    document.getElementById("sidebar-hints").innerHTML = `<strong>What to Look For:</strong><ul>` + hints.map(h => `<li>${h.label} – ${h.action}</li>`).join("") + "</ul>";
+function endAction(e) {
+  debug.log(`Mouse up event, drawing: ${drawing}, resizing: ${resizing}`);
+  
+  if (drawing && currentBox) {
+    const w = parseInt(currentBox.style.width);
+    const h = parseInt(currentBox.style.height);
+    debug.log(`Box dimensions: ${w}x${h}`);
+
+    if (w < 10 || h < 10) {
+      debug.log('Box too small - removing');
+      currentBox.remove();
+    } else {
+      debug.log('Showing tag popup');
+      popup.style.left = `${e.pageX + 10}px`;
+      popup.style.top = `${e.pageY + 10}px`;
+      popup.style.display = 'block';
+    }
+    drawing = false;
+  }
+
+  if (resizing) {
+    debug.log('Ending resize operation');
+    resizing = false;
+  }
+}
+
+function startResizing(e) {
+  debug.log('Starting box resize');
+  e.preventDefault();
+  e.stopPropagation();
+  resizing = true;
+  resizeHandle = e.target;
+  selectedBox = e.target.parentNode;
+  
+  originalBox = {
+    x: parseInt(selectedBox.style.left) || 0,
+    y: parseInt(selectedBox.style.top) || 0,
+    width: parseInt(selectedBox.style.width) || 0,
+    height: parseInt(selectedBox.style.height) || 0
+  };
+  
+  dragStartX = e.clientX;
+  dragStartY = e.clientY;
+  
+  debug.log(`Resize started - original dimensions: ${originalBox.width}x${originalBox.height}`);
+}
+
+function resizeBox(e) {
+  if (!resizing || !selectedBox || !resizeHandle) return;
+
+  const containerRect = imageContainer.getBoundingClientRect();
+  const dx = e.clientX - dragStartX;
+  const dy = e.clientY - dragStartY;
+  const handle = resizeHandle.className.split(' ')[1];
+  
+  let newLeft = originalBox.x;
+  let newTop = originalBox.y;
+  let newWidth = originalBox.width;
+  let newHeight = originalBox.height;
+  
+  switch (handle) {
+    case 'top-left':
+      newLeft = Math.min(originalBox.x + originalBox.width - 20, originalBox.x + dx);
+      newTop = Math.min(originalBox.y + originalBox.height - 20, originalBox.y + dy);
+      newWidth = originalBox.width - (newLeft - originalBox.x);
+      newHeight = originalBox.height - (newTop - originalBox.y);
+      break;
+    case 'top-right':
+      newTop = Math.min(originalBox.y + originalBox.height - 20, originalBox.y + dy);
+      newWidth = Math.max(20, originalBox.width + dx);
+      newHeight = originalBox.height - (newTop - originalBox.y);
+      break;
+    case 'bottom-left':
+      newLeft = Math.min(originalBox.x + originalBox.width - 20, originalBox.x + dx);
+      newWidth = originalBox.width - (newLeft - originalBox.x);
+      newHeight = Math.max(20, originalBox.height + dy);
+      break;
+    case 'bottom-right':
+      newWidth = Math.max(20, originalBox.width + dx);
+      newHeight = Math.max(20, originalBox.height + dy);
+      break;
+  }
+  
+  const maxX = containerRect.width - newWidth;
+  const maxY = containerRect.height - newHeight;
+  
+  newLeft = Math.max(0, Math.min(newLeft, maxX));
+  newTop = Math.max(0, Math.min(newTop, maxY));
+  
+  selectedBox.style.left = `${newLeft}px`;
+  selectedBox.style.top = `${newTop}px`;
+  selectedBox.style.width = `${newWidth}px`;
+  selectedBox.style.height = `${newHeight}px`;
+  
+  updateTagPosition(selectedBox);
+  updateTagData(selectedBox);
+}
+
+// Box selection and movement functions
+function selectBox(box, multi) {
+  debug.log(`Selecting box (multi: ${multi})`);
+  if (!multi) clearSelection();
+  box.classList.add('selected');
+  addResizeHandles(box);
+  selectedBox = box;
+}
+
+function clearSelection() {
+  debug.log('Clearing all selections');
+  document.querySelectorAll('.draw-box').forEach(b => {
+    b.classList.remove('selected');
+    b.querySelectorAll('.resize-handle').forEach(h => h.remove());
+  });
+  selectedBox = null;
+}
+
+function addResizeHandles(box) {
+  debug.log('Adding resize handles to box');
+  box.querySelectorAll('.resize-handle').forEach(h => h.remove());
+  
+  ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach(pos => {
+    const handle = document.createElement('div');
+    handle.className = `resize-handle ${pos}`;
+    box.appendChild(handle);
+  });
+}
+
+function startMoving(e) {
+  if (!selectedBox) return;
+  debug.log('Starting box movement');
+  dragStartX = e.clientX - parseInt(selectedBox.style.left);
+  dragStartY = e.clientY - parseInt(selectedBox.style.top);
+  document.addEventListener('mousemove', moveBox);
+  document.addEventListener('mouseup', stopMoving);
+}
+
+function moveBox(e) {
+  if (!selectedBox) return;
+  const rect = imageContainer.getBoundingClientRect();
+  let newX = e.clientX - dragStartX;
+  let newY = e.clientY - dragStartY;
+
+  newX = Math.max(0, Math.min(newX, rect.width - selectedBox.offsetWidth));
+  newY = Math.max(0, Math.min(newY, rect.height - selectedBox.offsetHeight));
+
+  selectedBox.style.left = `${newX}px`;
+  selectedBox.style.top = `${newY}px`;
+
+  updateTagPosition(selectedBox);
+  updateTagData(selectedBox);
+}
+
+function stopMoving() {
+  debug.log('Stopping box movement');
+  document.removeEventListener('mousemove', moveBox);
+  document.removeEventListener('mouseup', stopMoving);
+}
+
+function updateTagPosition(box) {
+  const idx = parseInt(box.dataset.index);
+  if (isNaN(idx)) return;
+  
+  const x = parseInt(box.style.left);
+  const y = parseInt(box.style.top);
+  const w = parseInt(box.style.width);
+  const h = parseInt(box.style.height);
+
+  const entry = document.querySelector(`#tag-log .tag-entry:nth-child(${idx + 1})`);
+  if (entry) {
+    entry.querySelector('.tag-position').textContent = `(${x}, ${y}) | ${w}×${h}`;
+  }
+}
+
+function updateTagData(box) {
+  const idx = parseInt(box.dataset.index);
+  if (isNaN(idx)) return;
+  
+  debug.log(`Updating tag data for index ${idx}`);
+  tagData[idx].x = parseInt(box.style.left);
+  tagData[idx].y = parseInt(box.style.top);
+  tagData[idx].width = parseInt(box.style.width);
+  tagData[idx].height = parseInt(box.style.height);
+  
+  if (imageName) {
+    allImageData[imageName] = [...tagData];
+    saveAllProgress();
+  }
+}
+
+// Tag creation and management
+function saveTag() {
+  const idx = presetDropdown.value;
+  if (!currentBox || idx === '') {
+    debug.log('Save tag attempted with no box or selection');
+    return;
+  }
+
+  debug.log(`Saving new tag with violation index ${idx}`);
+  const hint = currentHints[idx];
+  currentBox.title = `${hint.label}\n${hint.covers.join(', ')}`;
+  currentBox.classList.add('selected');
+
+  const boxData = {
+    label: hint.label,
+    codes: hint.covers,
+    severity: hint.severity || "🟡",
+    x: parseInt(currentBox.style.left),
+    y: parseInt(currentBox.style.top),
+    width: parseInt(currentBox.style.width),
+    height: parseInt(currentBox.style.height)
+  };
+
+  tagData.push(boxData);
+  currentBox.dataset.index = tagData.length - 1;
+  updateTagLog();
+  
+  if (imageName) {
+    allImageData[imageName] = [...tagData];
+    saveAllProgress();
+  }
+
+  popup.style.display = 'none';
+  currentBox = null;
+  showStatusMessage('✅ Violation tag added');
+}
+
+function updateTagLog() {
+  debug.log(`Updating tag log with ${tagData.length} entries`);
+  tagLog.innerHTML = '';
+  tagData.forEach((tag, index) => {
+    const div = document.createElement('div');
+    div.className = 'tag-entry';
+    const severityIndicator = tag.severity || "🟡";
+    div.innerHTML = `
+      <div class="tag-label">${severityIndicator} <strong>${tag.label}</strong></div>
+      <div class="tag-codes">${tag.codes.join(', ')}</div>
+      <div class="tag-position">(${tag.x}, ${tag.y}) | ${tag.width}×${tag.height}</div>
+    `;
+    tagLog.appendChild(div);
+  });
+}
+
+function cancelTag() {
+  debug.log('Cancelling tag creation');
+  if (currentBox) {
+    currentBox.remove();
+    currentBox = null;
+  }
+  popup.style.display = 'none';
+}
+
+// Data export functions
+function exportToCSV() {
+  debug.log('Starting CSV export');
+  if (imageName) saveTagsForCurrentImage();
+  
+  if (Object.keys(allImageData).length === 0) {
+    debug.log('Export attempted with no data');
+    alert('No violations to export!');
+    return;
+  }
+
+  let csv = 'Image,Severity,Label,Codes,X,Y,Width,Height\n';
+  let totalTags = 0;
+  
+  for (const [img, tags] of Object.entries(allImageData)) {
+    if (tags.length === 0) continue;
+    totalTags += tags.length;
+    
+    tags.forEach(t => {
+      const severity = t.severity || "🟡";
+      csv += `"${img}","${severity}","${t.label}",${t.codes.join(';')},${t.x},${t.y},${t.width},${t.height}\n`;
+    });
+  }
+
+  debug.log(`Exporting ${totalTags} tags to CSV`);
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8,' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'violations.csv';
+  link.click();
+  showStatusMessage('✅ CSV file exported');
+}
+
+// Save all progress to localStorage
+function saveAllProgress() {
+  try {
+    debug.log('Saving all progress to localStorage');
+    localStorage.setItem('violationTagsAll', JSON.stringify(allImageData));
+    return true;
+  } catch (e) {
+    debug.log('Error saving to localStorage:', e);
+    console.error('Error saving data:', e);
+    showStatusMessage('⚠️ Error saving data', 5000);
+    return false;
+  }
+}
+
+// Load all progress from localStorage
+function loadAllProgress() {
+  debug.log('Loading progress from localStorage');
+  const saved = localStorage.getItem('violationTagsAll');
+  if (saved) {
+    try {
+      allImageData = JSON.parse(saved);
+      debug.log(`Loaded data for ${Object.keys(allImageData).length} images`);
+      return true;
+    } catch (e) {
+      debug.log('Error parsing saved data:', e);
+      console.error('Error loading saved data:', e);
+      showStatusMessage('⚠️ Error loading saved data', 5000);
+      allImageData = {};
+      return false;
+    }
+  }
+  debug.log('No saved data found in localStorage');
+  allImageData = {};
+  return false;
+}
+
+// Clear data for current image
+function clearImageData() {
+  if (!imageName) {
+    debug.log('Clear attempted with no image loaded');
+    showStatusMessage('⚠️ No image loaded');
+    return;
+  }
+  
+  debug.log(`Clearing data for image: ${imageName}`);
+  
+  // Complete cleanup sequence
+  clearAllBoxes();
+  delete allImageData[imageName];
+  saveAllProgress();
+  
+  tagData = [];
+  currentHints = [];
+  updateTagLog();
+  sidebarHints.innerHTML = 'Upload image to see violations.';
+  
+  showStatusMessage(`✅ All data for ${imageName} cleared`);
+}
+
+// Clear all boxes from UI
+function clearAllBoxes() {
+  // Remove all draw boxes and their resize handles
+  document.querySelectorAll('.draw-box').forEach(box => {
+    box.querySelectorAll('.resize-handle').forEach(handle => handle.remove());
+    box.remove();
+  });
+  
+  // Clear any pending box creation
+  if (currentBox) {
+    currentBox.remove();
+    currentBox = null;
+  }
+  
+  // Reset drawing state
+  drawing = false;
+  resizing = false;
+  selectedBox = null;
+  
+  updateTagLog();
+}
+
+// Delete selected boxes with enhanced logging
+function deleteSelectedBoxes() {
+  const selectedBoxes = document.querySelectorAll('.draw-box.selected');
+  debug.log(`Delete selected triggered - ${selectedBoxes.length} boxes selected`);
+  
+  if (selectedBoxes.length === 0) {
+    showStatusMessage('⚠️ No boxes selected');
+    return;
+  }
+  
+  let indexesToRemove = [];
+  
+  selectedBoxes.forEach(box => {
+    const index = parseInt(box.dataset.index);
+    if (!isNaN(index)) {
+      indexesToRemove.push(index);
+      debug.log(`Marking box ${index} for deletion`);
+    }
+    box.remove();
+  });
+  
+  // Sort in descending order for safe removal
+  indexesToRemove.sort((a, b) => b - a).forEach(index => {
+    debug.log(`Removing tag at index ${index}`);
+    tagData.splice(index, 1);
+  });
+  
+  // Update remaining box indices
+  document.querySelectorAll('.draw-box').forEach((box, idx) => {
+    box.dataset.index = idx;
+  });
+  
+  updateTagLog();
+  
+  if (imageName) {
+    debug.log(`Updating saved data after deletion`);
+    allImageData[imageName] = [...tagData];
+    saveAllProgress();
+  }
+  
+  showStatusMessage(`✅ Deleted ${indexesToRemove.length} violation tag(s)`);
+}
+
+// Save progress button handler
+function saveProgress() {
+  if (imageName) {
+    debug.log('Manual save progress triggered');
+    saveTagsForCurrentImage();
+    showStatusMessage('✅ Progress saved!');
+  } else {
+    debug.log('Manual save attempted with no image loaded');
+    showStatusMessage('⚠️ No image loaded to save!');
+  }
+}
+
+// UI utility functions
+function showStatusMessage(message, duration = 3000) {
+  debug.log(`Status message: ${message}`);
+  statusMessage.textContent = message;
+  statusMessage.style.display = 'block';
+  setTimeout(() => {
+    statusMessage.style.display = 'none';
+  }, duration);
+}
+
+
+
+
+
+
+// --- DROPDOWN IMAGE SELECTOR LOGIC ---
+
+const imageMap = {
+  "Equifax": {
+    "AL": ["2024-04-25-P57", "2024-04-25-P58"],
+    "BB": ["2024-04-25-P20"],
+    "BK": ["2024-04-25-P16", "2024-04-25-P17"],
+    "BY": ["2024-04-25-P34", "2024-04-25-P35"],
+    "C1": ["2024-04-25-P26"],
+    "C2": ["2024-04-25-P28"],
+    "CR": ["2024-04-25-P18", "2024-04-25-P19"],
+    "DB": ["2024-04-25-P30", "2024-04-25-P31"],
+    "DL": ["2024-04-25-P50", "2024-04-25-P51"],
+    "HD": ["2024-04-25-P32", "2024-04-25-P33"],
+    "JP": ["2024-04-25-P24"],
+    "MF": ["2024-04-25-P67"],
+    "SR": ["2024-04-25-P22"]
+  },
+  "Experian": {
+    "AL": ["2024-04-25-P05"],
+    "BB": ["2024-04-25-P08", "2024-04-25-P09"],
+    "BK": ["2024-04-25-P06"],
+    "BY": ["2024-04-25-P07"],
+    "C1": ["2024-04-25-P11"],
+    "C2": ["2024-04-25-P12"],
+    "CR": ["2024-04-25-P16", "2024-04-25-P17"],
+    "DB": ["2024-04-25-P22"],
+    "DL": ["2024-04-25-P21", "2024-04-25-P22"],
+    "HD": ["2024-04-25-P34", "2024-04-25-P35"],
+    "JP": ["2024-04-25-P23"],
+    "MF": ["2024-04-25-P25"],
+    "SR": ["2024-04-25-P31"]
+  },
+  "TransUnion": {
+    "AL": ["2024-04-25-P07"],
+    "BB": ["2024-04-25-P14"],
+    "BK": ["2024-04-25-P10"],
+    "BY": ["2024-04-25-P12"],
+    "C1": ["2024-04-25-P17"],
+    "C2": ["2024-04-25-P20"],
+    "CR": ["2024-04-25-P26"],
+    "DB": ["2024-04-25-P30"],
+    "DL": ["2024-04-25-P27"],
+    "JP": ["2024-04-25-P28"],
+    "MF": ["2024-04-25-P31"],
+    "SR": ["2024-04-25-P34"]
+  }
+};
+
+function updateCreditorOptions() {
+  const bureau = document.getElementById("bureauSelect").value;
+  const creditorSelect = document.getElementById("creditorSelect");
+  creditorSelect.innerHTML = `<option disabled selected>Select Creditor</option>`;
+
+  if (!imageMap[bureau]) return;
+
+  Object.keys(imageMap[bureau]).forEach(creditor => {
+    const opt = document.createElement("option");
+    opt.value = creditor;
+    opt.textContent = creditor;
+    creditorSelect.appendChild(opt);
   });
 
-  const hintLookup = {
-    EQ: [
-      {
-        label: "Account Status: INCLUDED_IN_CHAPTER_13",
-        covers: ["§1681c(f)", "§1681e(b)"],
-        action: "Account misreported as active in Chapter 13 after discharge",
-        severity: "🔴"
-      },
-      {
-        label: "Balance: $0",
-        covers: ["§1681e(b)", "§1681c(f)"],
-        action: "Blank or false balance after discharge",
-        severity: "🔴"
+  creditorSelect.disabled = false;
+  document.getElementById("dateSelect").innerHTML = '';
+  document.getElementById("dateSelect").disabled = true;
+}
+
+function updateDateOptions() {
+  const bureau = document.getElementById("bureauSelect").value;
+  const creditor = document.getElementById("creditorSelect").value;
+  const dateSelect = document.getElementById("dateSelect");
+
+  dateSelect.innerHTML = `<option disabled selected>Select Date + Page</option>`;
+
+  if (!imageMap[bureau] || !imageMap[bureau][creditor]) return;
+
+  imageMap[bureau][creditor].forEach(entry => {
+    const opt = document.createElement("option");
+    opt.value = `${creditor}-${bureau.charAt(0).toUpperCase()}${bureau.slice(1,2)}-${entry}.png`;
+    opt.textContent = entry;
+    dateSelect.appendChild(opt);
+  });
+
+  dateSelect.disabled = false;
+}
+
+function loadSelectedImage() {
+  const bureau = document.getElementById("bureauSelect").value;
+  const selectedFilename = document.getElementById("dateSelect").value;
+
+  if (!bureau || !selectedFilename) {
+    alert("Please select all fields.");
+    return;
+  }
+
+  const path = `${bureau.charAt(0).toUpperCase() + bureau.slice(1).toLowerCase()}/${selectedFilename}`;
+  imageName = selectedFilename;
+  document.getElementById("report-img").src = path;
+  showStatusMessage(`✅ Loaded: ${path}`);
+}
+
+
+
+
+
+
+
+
+
+
+// Airtable Sync Settings
+const AIRTABLE_TOKEN = 'patiiNzMeWbsIHD29.b5c3d562339758fef9d454a5f7b25aa5702f10a8e0d1506d8682de7ddbf80e77';
+const AIRTABLE_BASE_ID = 'apppDRYBhN8W65aL5';
+const AIRTABLE_TABLE_NAME = 'ExportedViolations';
+
+async function sendToAirtable() {
+  if (!Object.keys(allImageData).length) {
+    alert("No violation tags to sync.");
+    return;
+  }
+
+  let totalSent = 0;
+
+  for (const [imgName, tags] of Object.entries(allImageData)) {
+    for (const tag of tags) {
+      const record = {
+        fields: {
+          "Image": imgName,
+          "Severity": tag.severity || "🟡",
+          "Label": tag.label || "",
+          "Codes": (tag.codes || []).join(';'),
+          "X": tag.x,
+          "Y": tag.y,
+          "Width": tag.width,
+          "Height": tag.height
+        }
+      };
+
+      try {
+        const res = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(record)
+        });
+
+        if (!res.ok) throw new Error(`Airtable error: ${res.statusText}`);
+        totalSent++;
+
+      } catch (err) {
+        console.error("Failed to send to Airtable:", err);
+        alert(`❌ Error sending some records. Check console.`);
+        return;
       }
-    ],
-    EX: [
-      {
-        label: "Status: Discharged through Bankruptcy Chapter 13",
-        covers: ["§1681s-2(a)(1)(A)", "§1681c(a)(4)", "§1681e(b)"],
-        action: "Status fails to reflect discharge update",
-        severity: "🔴"
-      }
-    ],
-    TU: [
-      {
-        label: "Pay Status: Account Included in Bankruptcy",
-        covers: ["§1681c(f)", "§1681e(b)"],
-        action: "Misleading status post-discharge",
-        severity: "🔴"
-      }
-    ]
-  };
+    }
+  }
+
+  alert(`✅ Successfully sent ${totalSent} violations to Airtable.`);
+}
+
+// Connect the button
+document.getElementById('syncToAirtable').addEventListener('click', sendToAirtable);
+
+
+
+
+
+
+
+
+// Set up all event listeners
+function setupEventListeners() {
+  debug.log('Setting up event listeners...');
+  fileInput.addEventListener('change', handleImageUpload);
+  document.getElementById('exportCSV').addEventListener('click', exportToCSV);
+  deleteButton.addEventListener('click', deleteSelectedBoxes);
+  toggleMultiSelectBtn.addEventListener('click', toggleMultiSelectMode);
+  saveProgressButton.addEventListener('click', saveProgress);
+  document.getElementById('clearImageData').addEventListener('click', clearImageData);
+  saveButton.addEventListener('click', saveTag);
+  cancelButton.addEventListener('click', cancelTag);
+
+  document.getElementById('syncToAirtable').addEventListener('click', sendToAirtable);
+
+  
+  // Drawing and selection handlers
+  imageContainer.addEventListener('mousedown', startDrawingOrSelecting);
+  imageContainer.addEventListener('mousemove', handleMouseMove);
+  imageContainer.addEventListener('mouseup', endAction);
+  document.addEventListener('mousemove', resizeBox);
+}
+
+// Initialize the application when DOM is loaded
+window.addEventListener('DOMContentLoaded', function() {
+  debug.log('DOM fully loaded - initializing application');
+  init();
+});
+
+// Debug initialization message
+debug.log('Violation Tagger script loaded');
 </script>
 </body>
 </html>
+
+
+
+
+
 
