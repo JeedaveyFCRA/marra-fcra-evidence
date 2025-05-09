@@ -13,7 +13,7 @@
     }
 
     #left-panel {
-      width: 320px;
+      width: 400px;
       padding: 15px;
       background-color: #f7f9fc;
       border-right: 1px solid #ccc;
@@ -26,6 +26,8 @@
       padding: 15px;
       box-sizing: border-box;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
     }
 
     #image-container {
@@ -161,7 +163,7 @@
     }
 
     .control-panel {
-      margin-bottom: 10px;
+      margin-bottom: 20px;
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
@@ -189,34 +191,39 @@
       margin-top: 5px;
       display: none;
     }
-#selector-panel {
-  width: 250px;
-  padding: 15px;
-  background-color: #fefefe;
-  border-left: 1px solid #ccc;
-  box-sizing: border-box;
-  overflow-y: auto;
-}
 
+    #selector-panel {
+      width: 400px;
+      padding: 15px;
+      background-color: #fefefe;
+      border-left: 1px solid #ccc;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+
+    #main-controls {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 20px;
+    }
+
+    #image-viewer {
+      display: flex;
+      flex: 1;
+    }
   </style>
 </head>
+
+
+
+
+
+
+
 
 <body>
 <!-- LEFT PANEL -->
 <div id="left-panel">
-  <div class="control-panel">
-    <label for="loadImage" class="file-input-button">📁 Load Image</label>
-    <input type="file" id="loadImage" accept="image/png,image/jpeg,image/gif" style="display:none" />
-    <button id="exportCSV">📤 Export CSV</button>
-    <button id="toggleMultiSelect">🔘 Multi: OFF</button>
-    <button id="deleteSelected">🗑️ Delete Selected</button>
-    <button id="clearImageData">🧹 Clear Image Data</button>
-    <button id="saveProgress">💾 Save Progress</button>
-    <button id="syncToAirtable">📡 Sync to Airtable</button>
-  </div>
-
-  <div id="status-message" class="status-message"></div>
-
   <!-- What to Look For -->
   <div id="sidebar-hints">
     Upload image to see violations.
@@ -226,10 +233,53 @@
   <div id="tag-log"></div>
 </div>
 
-<!-- CENTER PANEL -->
+<!-- RIGHT PANEL -->
 <div id="right-panel">
-  <div id="image-container">
-    <img id="report-img" src="" alt="Uploaded image will appear here" />
+  <!-- Main Controls -->
+  <div id="main-controls">
+    <div class="control-panel">
+      <label for="loadImage" class="file-input-button">📁 Load Image</label>
+      <input type="file" id="loadImage" accept="image/png,image/jpeg,image/gif" style="display:none" />
+      <button id="exportCSV">📤 Export CSV</button>
+      <button id="toggleMultiSelect">🔘 Multi: OFF</button>
+      <button id="deleteSelected">🗑️ Delete Selected</button>
+      <button id="clearImageData">🧹 Clear Image Data</button>
+      <button id="saveProgress">💾 Save Progress</button>
+      <button id="syncToAirtable">📡 Sync to Airtable</button>
+    </div>
+
+    <div id="status-message" class="status-message"></div>
+  </div>
+
+  <!-- Image Viewer -->
+  <div id="image-viewer">
+    <!-- Image Container -->
+    <div id="image-container">
+      <img id="report-img" src="" alt="Uploaded image will appear here" />
+    </div>
+
+    <!-- Right Dropdown Panel -->
+    <div id="selector-panel">
+      <h3 style="font-size:14px;">🗂️ Select Credit Report Page</h3>
+      <label>Bureau:
+        <select id="bureauSelect" onchange="updateCreditorOptions()" style="width:100%;">
+          <option disabled selected>Select Bureau</option>
+          <option value="Equifax">Equifax</option>
+          <option value="Experian">Experian</option>
+          <option value="TransUnion">TransUnion</option>
+        </select>
+      </label>
+      <br><br>
+      <label>Creditor:
+        <select id="creditorSelect" onchange="updateDateOptions()" style="width:100%;" disabled></select>
+      </label>
+      <br><br>
+      <label>Date + Page:
+        <select id="dateSelect" style="width:100%;" disabled></select>
+      </label>
+      <br><br>
+      <button onclick="loadSelectedImage()">📷 Load PNG</button>
+    </div>
   </div>
 
   <!-- Popup Form -->
@@ -241,37 +291,6 @@
     <button id="cancelTag">❌ Cancel</button>
   </div>
 </div>
-
-<!-- RIGHT DROPDOWN PANEL -->
-<div id="selector-panel">
-  <h3 style="font-size:14px;">🗂️ Select Credit Report Page</h3>
-  <label>Bureau:
-    <select id="bureauSelect" onchange="updateCreditorOptions()" style="width:100%;">
-      <option disabled selected>Select Bureau</option>
-      <option value="Equifax">Equifax</option>
-      <option value="Experian">Experian</option>
-      <option value="TransUnion">TransUnion</option>
-    </select>
-  </label>
-  <br><br>
-  <label>Creditor:
-    <select id="creditorSelect" onchange="updateDateOptions()" style="width:100%;" disabled></select>
-  </label>
-  <br><br>
-  <label>Date + Page:
-    <select id="dateSelect" style="width:100%;" disabled></select>
-  </label>
-  <br><br>
-  <button onclick="loadSelectedImage()">📷 Load PNG</button>
-</div>
-
-
-
-
-
-
-
-
 
 <script>
 // Bureau-specific FCRA violation hints
@@ -416,6 +435,16 @@ const hintLookup = {
   ]
 };
 
+
+
+
+
+
+
+
+
+
+
 // Debug configuration
 const debug = {
   imageLoading: true,
@@ -469,16 +498,7 @@ function init() {
     };
   }, 1000);
 }
-</script>
 
-
-
-
-
-
-
-
-<script>
 // Toggle multi-select mode
 function toggleMultiSelectMode() {
   isMultiSelectMode = !isMultiSelectMode;
@@ -619,7 +639,6 @@ function initViolationDropdown() {
     presetDropdown.appendChild(option);
   });
 }
-</script>
 
 
 
@@ -627,7 +646,7 @@ function initViolationDropdown() {
 
 
 
-<script>
+
 // Save tags for current image
 function saveTagsForCurrentImage() {
   if (!imageName) {
@@ -837,6 +856,13 @@ function resizeBox(e) {
   updateTagData(selectedBox);
 }
 
+
+
+
+
+
+
+
 // Box selection and movement functions
 function selectBox(box, multi) {
   debug.log(`Selecting box (multi: ${multi})`);
@@ -1024,6 +1050,13 @@ function exportToCSV() {
   showStatusMessage('✅ CSV file exported');
 }
 
+
+
+
+
+
+
+
 // Save all progress to localStorage
 function saveAllProgress() {
   try {
@@ -1170,11 +1203,6 @@ function showStatusMessage(message, duration = 3000) {
   }, duration);
 }
 
-
-
-
-
-
 // --- DROPDOWN IMAGE SELECTOR LOGIC ---
 
 const imageMap = {
@@ -1273,13 +1301,21 @@ function loadSelectedImage() {
 
   const path = `${bureau.charAt(0).toUpperCase() + bureau.slice(1).toLowerCase()}/${selectedFilename}`;
   imageName = selectedFilename;
+  
+  // Clear existing data first
+  clearAllBoxes();
+  tagData = [];
+  currentHints = [];
+  updateTagLog();
+  sidebarHints.innerHTML = 'Upload image to see violations.';
+  
   document.getElementById("report-img").src = path;
   showStatusMessage(`✅ Loaded: ${path}`);
+  
+  // Load hints for the new image
+  loadHintsForImage();
+  initViolationDropdown();
 }
-
-
-
-
 
 
 
@@ -1338,16 +1374,6 @@ async function sendToAirtable() {
   alert(`✅ Successfully sent ${totalSent} violations to Airtable.`);
 }
 
-// Connect the button
-document.getElementById('syncToAirtable').addEventListener('click', sendToAirtable);
-
-
-
-
-
-
-
-
 // Set up all event listeners
 function setupEventListeners() {
   debug.log('Setting up event listeners...');
@@ -1362,7 +1388,6 @@ function setupEventListeners() {
 
   document.getElementById('syncToAirtable').addEventListener('click', sendToAirtable);
 
-  
   // Drawing and selection handlers
   imageContainer.addEventListener('mousedown', startDrawingOrSelecting);
   imageContainer.addEventListener('mousemove', handleMouseMove);
@@ -1381,9 +1406,6 @@ debug.log('Violation Tagger script loaded');
 </script>
 </body>
 </html>
-
-
-
 
 
 
