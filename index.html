@@ -1290,6 +1290,7 @@ function updateDateOptions() {
   dateSelect.disabled = false;
 }
 
+// Replace the loadSelectedImage function with this improved version
 function loadSelectedImage() {
   const bureau = document.getElementById("bureauSelect").value;
   const creditor = document.getElementById("creditorSelect").value;
@@ -1300,68 +1301,68 @@ function loadSelectedImage() {
     return;
   }
 
-  // Save current data before loading new image
-  if (imageName) {
-    saveTagsForCurrentImage();
-  }
+  debug.log(`Loading selected image: ${selectedFilename} from ${bureau}`);
   
-  // Set new image name (this will be used by loadHintsForImage)
-  imageName = selectedFilename;
-  debug.log(`Setting image name to: ${imageName}`);
-  
-  // Clear all existing violation boxes and reset state
-  clearAllBoxes();
-  tagData = [];
-  currentHints = [];
-  updateTagLog();
-  sidebarHints.innerHTML = 'Upload image to see violations.';
-  
-  // Simulate file load process
-  const img = document.getElementById("report-img");
-  
-  // Show loading status
-  showStatusMessage('⏳ Loading image...', 0);
-  
-  // Set up onload handler
-  img.onload = function() {
-    debug.log('Image onload event triggered for dropdown selection');
-    
-    // Process image after load completes
-    setTimeout(() => {
-      // Load hints based on the bureau code in the filename
-      loadHintsForImage();
-      initViolationDropdown();
-      clearSelection();
-      loadTagsForCurrentImage();
-      
-      showStatusMessage(`✅ Image loaded: ${imageName}`);
-      debug.log(`Image dimensions: ${img.naturalWidth}x${img.naturalHeight}`);
-      debug.log(`Rendered dimensions: ${img.width}x${img.height}`);
-    }, 100);
-  };
-  
-  // Set up error handler
-  img.onerror = function() {
-    debug.log(`Image load error occurred for: ${img.src}`);
-    showStatusMessage('⚠️ Failed to load image', 5000);
-  };
-
-  // Use a direct path to prevent caching issues
-  // For example, construct a path that includes the bureau code explicitly
+  // Determine bureau code for hint detection
   let bureauCode = '';
   if (bureau === 'Equifax') bureauCode = 'EQ';
   else if (bureau === 'Experian') bureauCode = 'EX';
   else if (bureau === 'TransUnion') bureauCode = 'TU';
   
-  // This will help loadHintsForImage() detect the bureau code
-  if (!imageName.includes(bureauCode)) {
-    imageName = `${bureauCode}-${imageName}`;
-    debug.log(`Updated image name with bureau code: ${imageName}`);
+  // Save current data before loading new image
+  if (imageName) {
+    saveTagsForCurrentImage();
   }
   
-  // Set the image source - update this path as needed
-  img.src = selectedFilename;
-  debug.log(`Setting image src to: ${img.src}`);
+  // Set new image name with proper bureau code for hint detection
+  imageName = selectedFilename;
+  debug.log(`Set image name to: ${imageName}`);
+  
+  // Clear current state
+  clearAllBoxes();
+  tagData = [];
+  currentHints = [];
+  updateTagLog();
+  
+  // Load the image
+  const img = document.getElementById("report-img");
+  showStatusMessage('⏳ Loading image...', 0);
+  
+  // Critical: Set the onload handler before changing the src
+  img.onload = function() {
+    debug.log('Image onload event triggered for dropdown selection');
+    showStatusMessage('🖼️ Processing image...', 0);
+    
+    // Force bureau code detection by manually setting currentHints
+    currentHints = bureauCode ? [...hintLookup[bureauCode]] : [];
+    debug.log(`Manually set hints for bureau code: ${bureauCode}, found ${currentHints.length} hints`);
+    
+    // Update UI with hints
+    updateHintsPanel();
+    initViolationDropdown();
+    
+    // Load any saved tags for this image
+    loadTagsForCurrentImage();
+    
+    showStatusMessage(`✅ Image loaded: ${imageName}`);
+    debug.log(`Image loaded with dimensions: ${img.naturalWidth}x${img.naturalHeight}`);
+  };
+  
+  img.onerror = function() {
+    debug.log(`Failed to load image: ${img.src}`);
+    showStatusMessage('⚠️ Failed to load image', 5000);
+  };
+  
+  // Set the image source - this is likely the key issue
+  // Let's try using a more explicit path
+  try {
+    const imageDir = bureau.charAt(0).toUpperCase() + bureau.slice(1).toLowerCase();
+    img.src = `${imageDir}/${selectedFilename}`;
+    debug.log(`Set image src to: ${img.src}`);
+  } catch (e) {
+    debug.log(`Error setting image src: ${e}`);
+    showStatusMessage('⚠️ Error loading image', 5000);
+  }
 }
 
 
