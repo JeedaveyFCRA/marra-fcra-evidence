@@ -221,10 +221,8 @@
 
 
 
-
-
 <body>
-<!-- LEFT PANEL PART 2-->
+<!-- LEFT PANEL -->
 <div id="left-panel">
   <!-- What to Look For -->
   <div id="sidebar-hints">
@@ -294,17 +292,8 @@
   </div>
 </div>
 
-
-
-
-
-
-
-
-
-
 <script>
-// Bureau-specific FCRA violation hints PART 3
+// Bureau-specific FCRA violation hints
 const hintLookup = {
   "EQ": [
     {
@@ -446,6 +435,16 @@ const hintLookup = {
   ]
 };
 
+
+
+
+
+
+
+
+
+
+
 // Debug configuration
 const debug = {
   imageLoading: true,
@@ -484,15 +483,7 @@ const tagLog = document.getElementById('tag-log');
 const statusMessage = document.getElementById('status-message');
 const fileInput = document.getElementById('loadImage');
 
-
-
-
-
-
-
-
-
-// Initialize the application PART 4
+// Initialize the application
 function init() {
   debug.log('Initializing application...');
   loadAllProgress();
@@ -598,13 +589,16 @@ function loadHintsForImage() {
     return;
   }
 
-  // Enhanced bureau detection that works with both upload and dropdown filenames
+  // Case-insensitive bureau detection
   const upperName = imageName.toUpperCase();
   let bureauCode = '';
   
-  if (upperName.includes('EQUIFAX') || upperName.includes('-EQ-')) bureauCode = 'EQ';
-  else if (upperName.includes('EXPERIAN') || upperName.includes('-EX-')) bureauCode = 'EX';
-  else if (upperName.includes('TRANSUNION') || upperName.includes('-TU-')) bureauCode = 'TU';
+  if (upperName.includes('-EQ-')) bureauCode = 'EQ';
+  else if (upperName.includes('-EX-')) bureauCode = 'EX';
+  else if (upperName.includes('-TU-')) bureauCode = 'TU';
+  else if (upperName.includes('EQUIFAX')) bureauCode = 'EQ';
+  else if (upperName.includes('EXPERIAN')) bureauCode = 'EX';
+  else if (upperName.includes('TRANSUNION')) bureauCode = 'TU';
 
   debug.log(`Detected bureau code: ${bureauCode || 'None'} from filename: ${imageName}`);
   currentHints = bureauCode ? [...hintLookup[bureauCode]] : [];
@@ -653,7 +647,7 @@ function initViolationDropdown() {
 
 
 
-// Save tags for current image PART 5
+// Save tags for current image
 function saveTagsForCurrentImage() {
   if (!imageName) {
     debug.log('No image name to save tags for');
@@ -790,13 +784,6 @@ function endAction(e) {
   }
 }
 
-
-
-
-
-
-
-// PART 6
 function startResizing(e) {
   debug.log('Starting box resize');
   e.preventDefault();
@@ -868,6 +855,13 @@ function resizeBox(e) {
   updateTagPosition(selectedBox);
   updateTagData(selectedBox);
 }
+
+
+
+
+
+
+
 
 // Box selection and movement functions
 function selectBox(box, multi) {
@@ -960,15 +954,7 @@ function updateTagData(box) {
   }
 }
 
-
-
-
-
-
-
-
-
-// Tag creation and management PART 7
+// Tag creation and management
 function saveTag() {
   const idx = presetDropdown.value;
   if (!currentBox || idx === '') {
@@ -1071,7 +1057,7 @@ function exportToCSV() {
 
 
 
-// Save all progress to localStorage PART 8
+// Save all progress to localStorage
 function saveAllProgress() {
   try {
     debug.log('Saving all progress to localStorage');
@@ -1217,16 +1203,7 @@ function showStatusMessage(message, duration = 3000) {
   }, duration);
 }
 
-
-
-
-
-
-
-
-
-
-// --- DROPDOWN IMAGE SELECTOR LOGIC PART 9 ---
+// --- DROPDOWN IMAGE SELECTOR LOGIC ---
 
 const imageMap = {
   "Equifax": {
@@ -1305,8 +1282,7 @@ function updateDateOptions() {
 
   imageMap[bureau][creditor].forEach(entry => {
     const opt = document.createElement("option");
-    // Simplified filename format that matches the detection patterns
-    opt.value = `${bureau}-${creditor}-${entry}.png`;
+    opt.value = `${creditor}-${bureau.charAt(0).toUpperCase()}${bureau.slice(1,2)}-${entry}.png`;
     opt.textContent = entry;
     dateSelect.appendChild(opt);
   });
@@ -1323,35 +1299,57 @@ function loadSelectedImage() {
     return;
   }
 
-  // Clear existing data first
+  // Save current data before loading new image
+  if (imageName) {
+    saveTagsForCurrentImage();
+  }
+  
+  // Clear all existing violation boxes and reset state
   clearAllBoxes();
   tagData = [];
   currentHints = [];
   updateTagLog();
-  sidebarHints.innerHTML = 'Loading image...';
-
-  // Set the image name before loading
+  sidebarHints.innerHTML = 'Upload image to see violations.';
+  
+  // Set new image name
   imageName = selectedFilename;
   
-  // Set up image load handlers
-  image.onload = function() {
-    debug.log('Image onload event triggered');
-    loadHintsForImage();  // Load hints after image is loaded
+  // Construct the path
+  const path = `${bureau.charAt(0).toUpperCase() + bureau.slice(1).toLowerCase()}/${selectedFilename}`;
+  debug.log(`Loading selected image from: ${path}`);
+  
+  // Show loading status
+  showStatusMessage('⏳ Loading image...', 0);
+  
+  // Set the image source
+  const img = document.getElementById("report-img");
+  
+  // Set up onload handler before changing src
+  img.onload = function() {
+    debug.log('Image onload event triggered for selected image');
+    
+    // Full cleanup before loading new content
+    clearAllBoxes();
+    tagData = [];
+    
+    loadHintsForImage();
     initViolationDropdown();
+    clearSelection();
     loadTagsForCurrentImage();
+    
     showStatusMessage(`✅ Image loaded: ${imageName}`);
+    debug.log(`Image dimensions: ${img.naturalWidth}x${img.naturalHeight}`);
+    debug.log(`Rendered dimensions: ${img.width}x${img.height}`);
   };
   
-  image.onerror = function() {
+  // Set up error handler
+  img.onerror = function() {
     debug.log('Image load error occurred');
     showStatusMessage('⚠️ Failed to load image', 5000);
-    sidebarHints.innerHTML = 'Error loading image';
   };
-
-  // Construct proper path and load image
-  const path = `${bureau}/${selectedFilename}`;
-  debug.log(`Loading image from: ${path}`);
-  image.src = path;
+  
+  // Set the image source to trigger loading
+  img.src = path;
 }
 
 
@@ -1359,10 +1357,7 @@ function loadSelectedImage() {
 
 
 
-
-
-
-// Airtable Sync Settings PART 10
+// Airtable Sync Settings
 const AIRTABLE_TOKEN = 'patiiNzMeWbsIHD29.b5c3d562339758fef9d454a5f7b25aa5702f10a8e0d1506d8682de7ddbf80e77';
 const AIRTABLE_BASE_ID = 'apppDRYBhN8W65aL5';
 const AIRTABLE_TABLE_NAME = 'ExportedViolations';
@@ -1446,3 +1441,6 @@ debug.log('Violation Tagger script loaded');
 </script>
 </body>
 </html>
+
+
+
