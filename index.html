@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Violation Tagger v6.2 – Fully Integrated</title>
+  <title>Violation Tagger v6.2 – Fixed Cache Issue</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -11,69 +11,88 @@
       height: 100vh;
       overflow: hidden;
     }
+
     #left-panel {
       width: 400px;
       padding: 15px;
       background-color: #f7f9fc;
       border-right: 1px solid #ccc;
+      box-sizing: border-box;
       overflow-y: auto;
     }
+
     #right-panel {
       flex: 1;
       padding: 15px;
+      box-sizing: border-box;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
     }
+
     #image-container {
       position: relative;
       width: 810px;
       height: 920px;
       border: 1px solid #ccc;
-      background: white;
-      border-radius: 12px;
-      cursor: crosshair;
-      overflow: hidden;
       margin-top: 10px;
+      background-color: white;
+      cursor: crosshair;
+      user-select: none;
+      border-radius: 12px;
+      overflow: hidden;
     }
+
     #report-img {
       position: absolute;
       width: 778px;
-      top: 50%; left: 50%;
+      top: 50%;
+      left: 50%;
       transform: translate(-50%, -50%);
+      z-index: 0;
       pointer-events: none;
     }
+
     .draw-box {
       position: absolute;
       border: 2px dashed red;
-      background-color: rgba(255,0,0,0.1);
+      background-color: rgba(255, 0, 0, 0.1);
+      z-index: 10;
       border-radius: 4px;
     }
+
     .draw-box.selected {
       border: 2px solid blue;
-      background-color: rgba(0,0,255,0.1);
+      background-color: rgba(0, 0, 255, 0.1);
     }
+
     .resize-handle {
       position: absolute;
-      width: 6px; height: 6px;
+      width: 6px;
+      height: 6px;
       background: white;
       border: 1px solid #333;
+      z-index: 20;
       border-radius: 50%;
     }
-    .top-left {top:-3px;left:-3px;cursor:nwse-resize;}
-    .top-right {top:-3px;right:-3px;cursor:nesw-resize;}
-    .bottom-left {bottom:-3px;left:-3px;cursor:nesw-resize;}
-    .bottom-right {bottom:-3px;right:-3px;cursor:nwse-resize;}
+
+    .top-left { top: -3px; left: -3px; cursor: nwse-resize; }
+    .top-right { top: -3px; right: -3px; cursor: nesw-resize; }
+    .bottom-left { bottom: -3px; left: -3px; cursor: nesw-resize; }
+    .bottom-right { bottom: -3px; right: -3px; cursor: nwse-resize; }
+
     #popup {
       position: absolute;
+      z-index: 20;
       background: white;
       border: 1px solid #ccc;
       padding: 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
       display: none;
       width: 260px;
-      z-index: 20;
     }
+
+    /* === COMPACT "WHAT TO LOOK FOR" SECTION === */
     #sidebar-hints {
       font-size: 12px;
       line-height: 1.3;
@@ -83,6 +102,17 @@
       border-radius: 6px;
       margin-bottom: 10px;
     }
+
+    #sidebar-hints ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+    }
+
+    #sidebar-hints li {
+      margin-bottom: 4px;
+    }
+
     .hint-box {
       padding: 4px 8px;
       margin-bottom: 4px;
@@ -90,72 +120,126 @@
       background: #f9f9f9;
       border-radius: 3px;
     }
-    .hint-box.severe {border-left:3px solid #d9534f;background:#fff5f5;}
-    .hint-box.serious {border-left:3px solid #f0ad4e;background:#fffaf0;}
-    .hint-box.minor {border-left:3px solid #f7e360;background:#fefef7;}
-    .hint-label {font-weight:bold;}
-    .hint-codes {font-size:11px;color:#666;}
-    #tag-log {margin-top:10px;}
+
+    .hint-box.severe {
+      border-left: 3px solid #d9534f;
+      background: #fff5f5;
+    }
+
+    .hint-box.serious {
+      border-left: 3px solid #f0ad4e;
+      background: #fffaf0;
+    }
+
+    .hint-box.minor {
+      border-left: 3px solid #f7e360;
+      background: #fefef7;
+    }
+
+    .hint-label {
+      font-weight: bold;
+    }
+
+    .hint-codes {
+      font-size: 11px;
+      color: #666;
+    }
+
+    #tag-log {
+      margin-top: 10px;
+    }
+
     .tag-entry {
-      padding:6px;
-      background:#f8f9fa;
-      border-radius:4px;
-      font-size:12px;
-      margin-bottom:6px;
+      margin-bottom: 6px;
+      padding: 6px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      font-size: 12px;
     }
-    .tag-position {font-size:11px;color:#999;}
+
+    .tag-position {
+      font-size: 11px;
+      color: #999;
+    }
+
     .control-panel {
-      margin-bottom:20px;
-      display:flex; gap:6px;
-      flex-wrap:wrap;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
     }
+
     button {
-      padding:4px 8px;
-      font-size:13px;
-      cursor:pointer;
+      padding: 4px 8px;
+      font-size: 13px;
+      cursor: pointer;
     }
+
     .file-input-button {
-      padding:4px 8px;
-      cursor:pointer;
-      background:#f0f0f0;
-      border:1px solid #ccc;
-      border-radius:3px;
+      padding: 4px 8px;
+      cursor: pointer;
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 3px;
     }
+
     .status-message {
-      font-size:12px;
-      padding:5px 10px;
-      background:#e8f4ff;
-      border-radius:4px;
-      margin-top:5px;
-      display:none;
+      font-size: 12px;
+      padding: 5px 10px;
+      background: #e8f4ff;
+      border-radius: 4px;
+      margin-top: 5px;
+      display: none;
     }
+
     #selector-panel {
-      width:400px;
-      padding:15px;
-      background-color:#fefefe;
-      border-left:1px solid #ccc;
-      overflow-y:auto;
+      width: 400px;
+      padding: 15px;
+      background-color: #fefefe;
+      border-left: 1px solid #ccc;
+      box-sizing: border-box;
+      overflow-y: auto;
     }
+
     #main-controls {
-      display:flex;
-      flex-direction:column;
-      margin-bottom:20px;
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 20px;
     }
-    #image-viewer {display:flex;flex:1;}
+
+    #image-viewer {
+      display: flex;
+      flex: 1;
+    }
   </style>
 </head>
 
+
+
+
+
+
+
+
 <body>
+<!-- LEFT PANEL -->
 <div id="left-panel">
-  <div id="sidebar-hints">Upload image to see violations.</div>
+  <!-- What to Look For -->
+  <div id="sidebar-hints">
+    Upload image to see violations.
+  </div>
+
+  <!-- Violation Tag Log -->
   <div id="tag-log"></div>
 </div>
 
+<!-- RIGHT PANEL -->
 <div id="right-panel">
+  <!-- Main Controls -->
   <div id="main-controls">
     <div class="control-panel">
       <label for="loadImage" class="file-input-button">📁 Load Image</label>
-      <input type="file" id="loadImage" accept="image/*" style="display:none"/>
+      <input type="file" id="loadImage" accept="image/png,image/jpeg,image/gif" style="display:none" />
       <button id="exportCSV">📤 Export CSV</button>
       <button id="toggleMultiSelect">🔘 Multi: OFF</button>
       <button id="deleteSelected">🗑️ Delete Selected</button>
@@ -163,14 +247,18 @@
       <button id="saveProgress">💾 Save Progress</button>
       <button id="syncToAirtable">📡 Sync to Airtable</button>
     </div>
+
     <div id="status-message" class="status-message"></div>
   </div>
 
+  <!-- Image Viewer -->
   <div id="image-viewer">
+    <!-- Image Container -->
     <div id="image-container">
-      <img id="report-img" src="" alt="Uploaded image appears here"/>
+      <img id="report-img" src="" alt="Uploaded image will appear here" />
     </div>
 
+    <!-- Right Dropdown Panel -->
     <div id="selector-panel">
       <h3 style="font-size:14px;">🗂️ Select Credit Report Page</h3>
       <label>Bureau:
@@ -180,20 +268,21 @@
           <option value="Experian">Experian</option>
           <option value="TransUnion">TransUnion</option>
         </select>
-      </label><br><br>
+      </label>
+      <br><br>
       <label>Creditor:
-        <select id="creditorSelect" onchange="updateDateOptions()" style="width:100%;" disabled>
-          <option disabled selected>Select Creditor</option>
-        </select>
-      </label><br><br>
+        <select id="creditorSelect" onchange="updateDateOptions()" style="width:100%;" disabled></select>
+      </label>
+      <br><br>
       <label>Date + Page:
-        <select id="dateSelect" style="width:100%;" disabled>
-          <option disabled selected>Select Date + Page</option>
-        </select>
-      </label><br><br>
+        <select id="dateSelect" style="width:100%;" disabled></select>
+      </label>
+      <br><br>
+      <button onclick="loadSelectedImage()">📷 Load PNG</button>
     </div>
   </div>
 
+  <!-- Popup Form -->
   <div id="popup">
     <label><strong>Select Violation:</strong><br/>
       <select id="violationPreset" style="width:100%;padding:4px;"></select>
@@ -203,216 +292,444 @@
   </div>
 </div>
 
-
-// End of Part 1
-
-
-
-
-
-
-
 <script>
-// Violation hints by bureau
+// Bureau-specific FCRA violation hints
 const hintLookup = {
   "EQ": [
-    {label: "Account Status: INCLUDED_IN_CHAPTER_13", covers:["§1681c(f)", "§1681e(b)"], action:"Account misreported as active in Chapter 13 after discharge", severity:"🔴"},
-    {label: "Reported Balance: $0", covers:["§1681e(b)", "§1681c(f)"], action:"Zero balance misreported with discharge context", severity:"🔴"},
-    {label: "Available Credit", covers:["§1681e(b)"], action:"Available credit field inaccurate or blank", severity:"🟠"},
-    {label: "High Credit", covers:["§1681e(b)"], action:"High credit not accurately reflected", severity:"🟠"},
-    {label: "Credit Limit", covers:["§1681e(b)"], action:"Missing or inaccurate limit field", severity:"🟠"}
+    {
+      label: "Account Status: INCLUDED_IN_CHAPTER_13",
+      covers: ["§1681c(f)", "§1681e(b)"],
+      action: "Account misreported as active in Chapter 13 after discharge",
+      severity: "🔴"
+    },
+    {
+      label: "Reported Balance: $0",
+      covers: ["§1681e(b)", "§1681c(f)"],
+      action: "Zero balance misreported with discharge context",
+      severity: "🔴"
+    },
+    {
+      label: "Available Credit",
+      covers: ["§1681e(b)"],
+      action: "Available credit field inaccurate or blank",
+      severity: "🟠"
+    },
+    {
+      label: "High Credit",
+      covers: ["§1681e(b)"],
+      action: "High credit not accurately reflected",
+      severity: "🟠"
+    },
+    {
+      label: "Credit Limit",
+      covers: ["§1681e(b)"],
+      action: "Missing or inaccurate limit field",
+      severity: "🟠"
+    },
+    {
+      label: "Balance: $0",
+      covers: ["§1681e(b)", "§1681c(f)"],
+      action: "Blank or false balance after discharge",
+      severity: "🔴"
+    },
+    {
+      label: "Date Reported: Oct 25, 2018",
+      covers: ["§1681c(a)(4)", "§1681e(b)"],
+      action: "Frozen/stale date from pre-discharge era",
+      severity: "🔴"
+    },
+    {
+      label: "Bankruptcy Chapter 13",
+      covers: ["§1681c(f)", "§1681e(b)"],
+      action: "Incorrect bankruptcy reporting",
+      severity: "🔴"
+    },
+    {
+      label: "Bankruptcy Completed",
+      covers: ["§1681e(b)"],
+      action: "Status not updated after discharge",
+      severity: "🔴"
+    }
   ],
   "TU": [
-    {label: "Date Updated: 02/19/2024", covers:["§1681s-2(a)(1)(A)", "§1681e(b)"], action:"Date updated but data still inaccurate", severity:"🔴"},
-    {label: "Pay Status: >Included in Bankruptcy<", covers:["§1681c(f)", "§1681e(b)"], action:"Misleading status post-discharge", severity:"🔴"}
+    {
+      label: "Date Updated: 02/19/2024",
+      covers: ["§1681s-2(a)(1)(A)", "§1681e(b)"],
+      action: "Date updated but data still inaccurate",
+      severity: "🔴"
+    },
+    {
+      label: "Pay Status: >Account Included in Bankruptcy<",
+      covers: ["§1681c(f)", "§1681e(b)"],
+      action: "Misleading status post-discharge",
+      severity: "🔴"
+    },
+    {
+      label: "Date Closed: 02/19/2024",
+      covers: ["§1681s-2(a)(1)(A)", "§1681e(b)"],
+      action: "Wrong or backdated closure",
+      severity: "🔴"
+    },
+    {
+      label: "Remarks: CHAPTER 13 BANKRUPTCY",
+      covers: ["§1681c(f)", "§1681e(b)"],
+      action: "Misreported bankruptcy notation",
+      severity: "🔴"
+    },
+    {
+      label: "On Record Until: 09/2025",
+      covers: ["§1681e(b)", "§1681c(a)(1)"],
+      action: "Incorrect or outdated removal date",
+      severity: "🔴"
+    }
   ],
   "EX": [
-    {label: "Status: Discharged through Chapter 13", covers:["§1681s-2(a)(1)(A)","§1681c(a)(4)","§1681e(b)"], action:"Fails to reflect discharge update", severity:"🔴"},
-    {label: "Status Updated: Oct 2018", covers:["§1681c(a)(4)","§1681s-2(a)(1)(A)"], action:"Stale status update field", severity:"🔴"}
+    {
+      label: "Status: Discharged through Bankruptcy Chapter 13",
+      covers: ["§1681s-2(a)(1)(A)", "§1681c(a)(4)", "§1681e(b)"],
+      action: "Status fails to reflect discharge update",
+      severity: "🔴"
+    },
+    {
+      label: "Status Updated: Oct 2018",
+      covers: ["§1681c(a)(4)", "§1681s-2(a)(1)(A)"],
+      action: "Stale 'Status Updated' field from years earlier",
+      severity: "🔴"
+    },
+    {
+      label: "Balance: -",
+      covers: ["§1681e(b)", "§1681c(f)"],
+      action: "Missing balance value post-discharge",
+      severity: "🔴"
+    },
+    {
+      label: "Balance Updated: -",
+      covers: ["§1681e(b)", "§1681c(a)(4)"],
+      action: "No recent balance update post-discharge",
+      severity: "🔴"
+    },
+    {
+      label: "Recent Payment: -",
+      covers: ["§1681e(b)"],
+      action: "Missing/blank payment activity",
+      severity: "🟠"
+    },
+    {
+      label: "Monthly Payment: -",
+      covers: ["§1681e(b)"],
+      action: "Monthly payment field missing",
+      severity: "🟠"
+    },
+    {
+      label: "Highest Balance: -",
+      covers: ["§1681e(b)"],
+      action: "Missing highest balance field",
+      severity: "🟠"
+    },
+    {
+      label: "On Record Until: Oct 2025",
+      covers: ["§1681e(b)", "§1681c(a)(1)"],
+      action: "Incorrect or outdated removal date",
+      severity: "🔴"
+    }
   ]
 };
 
-// Debugging config
+
+
+
+
+
+
+
+
+
+
+// Debug configuration
 const debug = {
   imageLoading: true,
-  log: function(msg){if(this.imageLoading)console.log('[DEBUG]',msg);}
+  log: function(message) {
+    if (this.imageLoading) console.log('[DEBUG]', message);
+  }
 };
 
 // Global variables
-let currentBox=null, selectedBox=null, drawing=false, resizing=false, imageName='', tagData=[], currentHints=[], dragStartX=0, dragStartY=0, resizeHandle=null, originalBox={x:0,y:0,width:0,height:0}, allImageData={}, isMultiSelectMode=false;
+let currentBox = null;
+let selectedBox = null;
+let drawing = false;
+let resizing = false;
+let imageName = '';
+let tagData = [];
+let currentHints = [];
+let dragStartX = 0;
+let dragStartY = 0;
+let resizeHandle = null;
+let originalBox = { x: 0, y: 0, width: 0, height: 0 };
+let allImageData = {};
+let isMultiSelectMode = false;
 
 // DOM elements
-const imageContainer=document.getElementById('image-container'), image=document.getElementById('report-img'), popup=document.getElementById('popup'), presetDropdown=document.getElementById('violationPreset'), saveButton=document.getElementById('saveTag'), cancelButton=document.getElementById('cancelTag'), deleteButton=document.getElementById('deleteSelected'), toggleMultiSelectBtn=document.getElementById('toggleMultiSelect'), saveProgressButton=document.getElementById('saveProgress'), sidebarHints=document.getElementById('sidebar-hints'), tagLog=document.getElementById('tag-log'), statusMessage=document.getElementById('status-message'), fileInput=document.getElementById('loadImage'), bureauSelect=document.getElementById('bureauSelect'), creditorSelect=document.getElementById('creditorSelect'), dateSelect=document.getElementById('dateSelect');
+const imageContainer = document.getElementById('image-container');
+const image = document.getElementById('report-img');
+const popup = document.getElementById('popup');
+const presetDropdown = document.getElementById('violationPreset');
+const saveButton = document.getElementById('saveTag');
+const cancelButton = document.getElementById('cancelTag');
+const deleteButton = document.getElementById('deleteSelected');
+const toggleMultiSelectBtn = document.getElementById('toggleMultiSelect');
+const saveProgressButton = document.getElementById('saveProgress');
+const sidebarHints = document.getElementById('sidebar-hints');
+const tagLog = document.getElementById('tag-log');
+const statusMessage = document.getElementById('status-message');
+const fileInput = document.getElementById('loadImage');
 
-// Initialize application
-function init(){
-  debug.log('Initializing Violation Tagger...');
+// Initialize the application
+function init() {
+  debug.log('Initializing application...');
   loadAllProgress();
   setupEventListeners();
-  showStatusMessage('✅ Violation Tagger ready!',2000);
-  setTimeout(()=>{image.onerror=()=>{showStatusMessage('⚠️ Failed to load image',5000);}},1000);
+  showStatusMessage('✅ Violation Tagger ready!', 2000);
+  
+  // Only set error handler after initial load
+  setTimeout(() => {
+    image.onerror = function() {
+      debug.log('Image load error occurred');
+      showStatusMessage('⚠️ Failed to load image', 5000);
+    };
+  }, 1000);
 }
 
-// Setup event listeners
-function setupEventListeners(){
-  fileInput.addEventListener('change',handleImageUpload);
-  document.getElementById('exportCSV').addEventListener('click',exportToCSV);
-  deleteButton.addEventListener('click',deleteSelectedBoxes);
-  toggleMultiSelectBtn.addEventListener('click',toggleMultiSelectMode);
-  saveProgressButton.addEventListener('click',saveProgress);
-  document.getElementById('clearImageData').addEventListener('click',clearImageData);
-  saveButton.addEventListener('click',saveTag);
-  cancelButton.addEventListener('click',cancelTag);
-  document.getElementById('syncToAirtable').addEventListener('click',sendToAirtable);
-  imageContainer.addEventListener('mousedown',startDrawingOrSelecting);
-  imageContainer.addEventListener('mousemove',handleMouseMove);
-  imageContainer.addEventListener('mouseup',endAction);
-  document.addEventListener('mousemove',resizeBox);
+// Toggle multi-select mode
+function toggleMultiSelectMode() {
+  isMultiSelectMode = !isMultiSelectMode;
+  toggleMultiSelectBtn.textContent = `🔘 Multi: ${isMultiSelectMode ? 'ON' : 'OFF'}`;
+  showStatusMessage(`Multi-select mode: ${isMultiSelectMode ? 'ON' : 'OFF'}`);
 }
 
-// Image Upload Handling
-function handleImageUpload(e){
-  const file=e.target.files[0];
-  if(!file||!file.type.match('image.*')){
-    showStatusMessage('⚠️ Invalid file selected',5000);
+// Handle image upload with enhanced error handling
+function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) {
+    debug.log('No file selected');
     return;
   }
-  if(imageName)saveTagsForCurrentImage();
-  clearAllBoxes();tagData=[];currentHints=[];updateTagLog();sidebarHints.innerHTML='Loading hints...';
-  imageName=file.name;const reader=new FileReader();
-  reader.onload=e=>{image.src=e.target.result;showStatusMessage('🖼️ Rendering image...',0);};
-  reader.onerror=()=>showStatusMessage('⚠️ Error reading file',5000);
+
+  debug.log(`File selected: ${file.name}, type: ${file.type}, size: ${file.size} bytes`);
+
+  // Validate image type
+  if (!file.type.match('image.*')) {
+    debug.log('Invalid file type selected');
+    showStatusMessage('⚠️ Please select an image file (PNG, JPEG, GIF)', 5000);
+    return;
+  }
+
+  // Save current data before loading new image
+  if (imageName) {
+    saveTagsForCurrentImage();
+  }
+  
+  // Clear all existing violation boxes and reset state
+  clearAllBoxes();
+  tagData = [];
+  currentHints = [];
+  updateTagLog();
+  sidebarHints.innerHTML = 'Upload image to see violations.';
+  
+  // Set new image name
+  imageName = file.name;
+  debug.log(`Loading new image: ${imageName}`);
+
+  const reader = new FileReader();
+  
+  reader.onloadstart = () => {
+    debug.log('Starting file read...');
+    showStatusMessage('⏳ Loading image...', 0);
+  };
+  
+  reader.onload = function(event) {
+    debug.log('FileReader load event triggered');
+    image.src = event.target.result;
+    showStatusMessage('🖼️ Rendering image...', 0);
+  };
+  
+  reader.onerror = function() {
+    debug.log('FileReader error occurred');
+    showStatusMessage('⚠️ Error reading image file', 5000);
+  };
+  
+  reader.onloadend = function() {
+    debug.log('FileReader load completed');
+  };
+
+  image.onload = function() {
+    debug.log('Image onload event triggered');
+    
+    // Full cleanup before loading new content
+    clearAllBoxes();
+    tagData = [];
+    
+    loadHintsForImage();
+    initViolationDropdown();
+    clearSelection();
+    loadTagsForCurrentImage();
+    
+    showStatusMessage(`✅ Image loaded: ${imageName}`);
+    debug.log(`Image dimensions: ${image.naturalWidth}x${image.naturalHeight}`);
+    debug.log(`Rendered dimensions: ${image.width}x${image.height}`);
+  };
+
   reader.readAsDataURL(file);
-  image.onload=()=>{clearAllBoxes();tagData=[];loadHintsForImage();initViolationDropdown();clearSelection();loadTagsForCurrentImage();showStatusMessage(`✅ Image loaded: ${imageName}`);};
 }
 
-// Load hints based on image filename
-function loadHintsForImage(){
-  const upperName=imageName.toUpperCase();
-  let bureauCode='';
-  if(upperName.includes('-EQ-'))bureauCode='EQ';
-  else if(upperName.includes('-EX-'))bureauCode='EX';
-  else if(upperName.includes('-TU-'))bureauCode='TU';
-  currentHints=bureauCode?[...hintLookup[bureauCode]]:[];
+// Load hints based on image name with improved bureau detection
+function loadHintsForImage() {
+  if (!imageName) {
+    debug.log('No image name available for hint loading');
+    currentHints = [];
+    return;
+  }
+
+  // Case-insensitive bureau detection
+  const upperName = imageName.toUpperCase();
+  let bureauCode = '';
+  
+  if (upperName.includes('-EQ-')) bureauCode = 'EQ';
+  else if (upperName.includes('-EX-')) bureauCode = 'EX';
+  else if (upperName.includes('-TU-')) bureauCode = 'TU';
+  else if (upperName.includes('EQUIFAX')) bureauCode = 'EQ';
+  else if (upperName.includes('EXPERIAN')) bureauCode = 'EX';
+  else if (upperName.includes('TRANSUNION')) bureauCode = 'TU';
+
+  debug.log(`Detected bureau code: ${bureauCode || 'None'} from filename: ${imageName}`);
+  currentHints = bureauCode ? [...hintLookup[bureauCode]] : [];
   updateHintsPanel();
 }
 
-// Update hints display
-function updateHintsPanel(){
-  sidebarHints.innerHTML=currentHints.length?currentHints.map(h=>{
-    const severity=h.severity==="🔴"?"severe":h.severity==="🟠"?"serious":"minor";
-    return `<div class="hint-box ${severity}"><div class="hint-label">${h.label}</div><div class="hint-action">${h.action}</div><div class="hint-codes">${h.covers.join(', ')}</div></div>`;
-  }).join(''):'<div style="color:#666;">No violations detected.</div>';
-}
-
-// Initialize violation dropdown
-function initViolationDropdown(){
-  presetDropdown.innerHTML='<option disabled selected>Select violation</option>';
-  currentHints.forEach((h,i)=>{const o=document.createElement('option');o.value=i;o.textContent=`${h.severity} ${h.label}`;presetDropdown.appendChild(o);});
-}
-
-// Save/load tags
-function saveTagsForCurrentImage(){if(imageName){allImageData[imageName]=[...tagData];saveAllProgress();}}
-function loadTagsForCurrentImage(){loadAllProgress();tagData=[];clearAllBoxes();if(allImageData[imageName]){tagData=[...allImageData[imageName]];renderSavedTags();}updateTagLog();}
-function renderSavedTags(){tagData.forEach((t,i)=>{const b=document.createElement('div');b.className='draw-box';b.style.left=`${t.x}px`;b.style.top=`${t.y}px`;b.style.width=`${t.width}px`;b.style.height=`${t.height}px`;b.title=`${t.label}\n${t.codes.join(', ')}`;b.dataset.index=i;imageContainer.appendChild(b);});}
-
-// Local storage handling
-function saveAllProgress(){localStorage.setItem('violationTagsAll',JSON.stringify(allImageData));}
-function loadAllProgress(){allImageData=JSON.parse(localStorage.getItem('violationTagsAll'))||{};}
-
-// Status message
-function showStatusMessage(msg,dur=3000){statusMessage.textContent=msg;statusMessage.style.display='block';setTimeout(()=>statusMessage.style.display='none',dur);}
-
-// Multi-select toggle
-function toggleMultiSelectMode(){isMultiSelectMode=!isMultiSelectMode;toggleMultiSelectBtn.textContent=`🔘 Multi: ${isMultiSelectMode?'ON':'OFF'}`;showStatusMessage(`Multi-select: ${isMultiSelectMode?'ON':'OFF'}`);}
-
-// Dropdown selectors logic
-const imageMap={"Equifax":{"AL":["2024-04-25-P57"],"BB":["2024-04-25-P20"]},"Experian":{"AL":["2024-04-25-P05"]},"TransUnion":{"AL":["2024-04-25-P07"]}};
-function updateCreditorOptions(){
-  creditorSelect.innerHTML='<option disabled selected>Select Creditor</option>';dateSelect.disabled=true;dateSelect.innerHTML='';const b=bureauSelect.value;if(imageMap[b]){Object.keys(imageMap[b]).forEach(c=>{creditorSelect.innerHTML+=`<option>${c}</option>`;});creditorSelect.disabled=false;}
-}
-function updateDateOptions(){
-  const b=bureauSelect.value,c=creditorSelect.value;dateSelect.innerHTML='<option disabled selected>Select Date + Page</option>';if(imageMap[b][c]){imageMap[b][c].forEach(d=>{dateSelect.innerHTML+=`<option>${d}.png</option>`;});dateSelect.disabled=false;}
-}
-
-// End of Part 2
-
-
-
-
-
-// Load image from GitHub/Airtable based on dropdown selection
-async function loadSelectedImage() {
-  const bureau = bureauSelect.value;
-  const selectedFilename = dateSelect.value;
-
-  if (!bureau || !selectedFilename) {
-    showStatusMessage('⚠️ Select all dropdown fields', 4000);
+// Update hints panel display
+function updateHintsPanel() {
+  debug.log(`Updating hints panel with ${currentHints.length} hints`);
+  
+  if (currentHints.length === 0) {
+    sidebarHints.innerHTML = '<div style="color:#666;">No specific violations detected for this bureau.</div>';
     return;
   }
 
-  const imageUrl = `https://YOUR_GITHUB_BASE_URL/${bureau}/${selectedFilename}`;
-  imageName = selectedFilename;
+  sidebarHints.innerHTML = currentHints.map(hint => {
+    const severityClass = hint.severity === "🔴" ? "severe" :
+                         hint.severity === "🟠" ? "serious" : "minor";
 
-  try {
-    showStatusMessage('⏳ Loading image...', 0);
-    const response = await fetch(imageUrl);
-    if (!response.ok) throw new Error(`Failed to load: ${response.statusText}`);
-    const blob = await response.blob();
-    const reader = new FileReader();
-
-    reader.onload = function(event) {
-      clearAllBoxes(); tagData=[]; currentHints=[]; updateTagLog(); sidebarHints.innerHTML='Loading hints...';
-      image.src = event.target.result;
-      showStatusMessage(`✅ Loaded: ${selectedFilename}`);
-    };
-    reader.onerror = () => showStatusMessage('⚠️ Error reading fetched image file', 5000);
-    reader.readAsDataURL(blob);
-
-    image.onload = () => {
-      loadHintsForImage();
-      initViolationDropdown();
-      clearSelection();
-      loadTagsForCurrentImage();
-    };
-
-    image.onerror = () => showStatusMessage('⚠️ Error displaying image', 5000);
-  } catch (error) {
-    console.error(error);
-    showStatusMessage(`⚠️ ${error.message}`, 5000);
-  }
+    return `
+      <div class="hint-box ${severityClass}">
+        <div class="hint-label">${hint.label}</div>
+        <div class="hint-action">${hint.action}</div>
+        <div class="hint-codes">${hint.covers.join(', ')}</div>
+      </div>
+    `;
+  }).join('');
 }
 
-// Assign image loading logic to existing Load Image button
-document.querySelector('label[for="loadImage"]').onclick = () => {
-  if (bureauSelect.value && creditorSelect.value && dateSelect.value) {
-    loadSelectedImage();
-    return false;
-  }
-};
+// Initialize violation dropdown
+function initViolationDropdown() {
+  debug.log(`Initializing violation dropdown with ${currentHints.length} options`);
+  presetDropdown.innerHTML = '<option disabled selected>Select a violation</option>';
+  currentHints.forEach((hint, index) => {
+    const option = document.createElement('option');
+    option.value = index;
+    option.textContent = `${hint.severity || '🟡'} ${hint.label} (${hint.covers.length} codes)`;
+    presetDropdown.appendChild(option);
+  });
+}
 
-// Drawing and box interaction handlers
+
+
+
+
+
+
+
+// Save tags for current image
+function saveTagsForCurrentImage() {
+  if (!imageName) {
+    debug.log('No image name to save tags for');
+    return;
+  }
+  debug.log(`Saving tags for image: ${imageName}`);
+  allImageData[imageName] = [...tagData];
+  saveAllProgress();
+}
+
+// Load tags for current image
+function loadTagsForCurrentImage() {
+  debug.log(`Loading tags for image: ${imageName}`);
+  loadAllProgress();
+  
+  // Clear existing data first
+  tagData = [];
+  clearAllBoxes();
+  
+  if (allImageData[imageName]) {
+    debug.log(`Found ${allImageData[imageName].length} saved tags for this image`);
+    tagData = [...allImageData[imageName]];
+    renderSavedTags();
+  } else {
+    debug.log('No saved tags found for this image');
+  }
+  
+  updateTagLog();
+}
+
+// Render saved tags on the image
+function renderSavedTags() {
+  debug.log(`Rendering ${tagData.length} saved tags`);
+  document.querySelectorAll('.draw-box').forEach(box => box.remove());
+  
+  tagData.forEach((tag, index) => {
+    const box = document.createElement('div');
+    box.className = 'draw-box';
+    box.style.left = `${tag.x}px`;
+    box.style.top = `${tag.y}px`;
+    box.style.width = `${tag.width}px`;
+    box.style.height = `${tag.height}px`;
+    box.title = `${tag.label}\n${tag.codes.join(', ')}`;
+    box.dataset.index = index;
+    imageContainer.appendChild(box);
+  });
+}
+
+// Drawing and selection functions with enhanced position tracking
 function startDrawingOrSelecting(e) {
+  debug.log(`Mouse down event at (${e.clientX}, ${e.clientY})`);
+  
   if (e.target.classList.contains('resize-handle')) {
     startResizing(e);
     return;
   }
+
   if (e.target.classList.contains('draw-box')) {
     selectBox(e.target, e.shiftKey || isMultiSelectMode);
     startMoving(e);
     return;
   }
+
   startDrawing(e);
 }
 
 function startDrawing(e) {
+  debug.log(`Starting new box drawing`);
+  if (!isMultiSelectMode) clearSelection();
   drawing = true;
   const rect = imageContainer.getBoundingClientRect();
-  const x = e.clientX - rect.left, y = e.clientY - rect.top;
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  debug.log(`New box starting at (${x}, ${y})`);
+
   currentBox = document.createElement('div');
   currentBox.className = 'draw-box';
-  currentBox.style.left = `${x}px`; currentBox.style.top = `${y}px`;
-  currentBox.style.width = '0px'; currentBox.style.height = '0px';
+  currentBox.style.left = `${x}px`;
+  currentBox.style.top = `${y}px`;
+  currentBox.style.width = '0px';
+  currentBox.style.height = '0px';
   currentBox.dataset.index = tagData.length;
   imageContainer.appendChild(currentBox);
 }
@@ -420,154 +737,675 @@ function startDrawing(e) {
 function handleMouseMove(e) {
   if (drawing && currentBox) {
     const rect = imageContainer.getBoundingClientRect();
-    const x = e.clientX - rect.left, y = e.clientY - rect.top;
-    const startX = parseInt(currentBox.style.left), startY = parseInt(currentBox.style.top);
-    currentBox.style.left = `${Math.min(x,startX)}px`; currentBox.style.top = `${Math.min(y,startY)}px`;
-    currentBox.style.width = `${Math.abs(x-startX)}px`; currentBox.style.height = `${Math.abs(y-startY)}px`;
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const startX = parseInt(currentBox.style.left);
+    const startY = parseInt(currentBox.style.top);
+    
+    if (x < startX) {
+      currentBox.style.left = `${x}px`;
+      currentBox.style.width = `${startX - x}px`;
+    } else {
+      currentBox.style.width = `${x - startX}px`;
+    }
+    
+    if (y < startY) {
+      currentBox.style.top = `${y}px`;
+      currentBox.style.height = `${startY - y}px`;
+    } else {
+      currentBox.style.height = `${y - startY}px`;
+    }
   }
 }
 
 function endAction(e) {
+  debug.log(`Mouse up event, drawing: ${drawing}, resizing: ${resizing}`);
+  
   if (drawing && currentBox) {
-    const w = parseInt(currentBox.style.width), h = parseInt(currentBox.style.height);
-    if (w<10 || h<10) currentBox.remove();
-    else {
-      popup.style.left=`${e.pageX+10}px`;popup.style.top=`${e.pageY+10}px`;popup.style.display='block';
+    const w = parseInt(currentBox.style.width);
+    const h = parseInt(currentBox.style.height);
+    debug.log(`Box dimensions: ${w}x${h}`);
+
+    if (w < 10 || h < 10) {
+      debug.log('Box too small - removing');
+      currentBox.remove();
+    } else {
+      debug.log('Showing tag popup');
+      popup.style.left = `${e.pageX + 10}px`;
+      popup.style.top = `${e.pageY + 10}px`;
+      popup.style.display = 'block';
     }
-    drawing=false;
+    drawing = false;
   }
-  resizing=false;
+
+  if (resizing) {
+    debug.log('Ending resize operation');
+    resizing = false;
+  }
 }
 
-// Resize logic
 function startResizing(e) {
-  resizing=true;resizeHandle=e.target;selectedBox=e.target.parentNode;
-  originalBox={x:parseInt(selectedBox.style.left),y:parseInt(selectedBox.style.top),width:parseInt(selectedBox.style.width),height:parseInt(selectedBox.style.height)};
-  dragStartX=e.clientX;dragStartY=e.clientY;
+  debug.log('Starting box resize');
+  e.preventDefault();
+  e.stopPropagation();
+  resizing = true;
+  resizeHandle = e.target;
+  selectedBox = e.target.parentNode;
+  
+  originalBox = {
+    x: parseInt(selectedBox.style.left) || 0,
+    y: parseInt(selectedBox.style.top) || 0,
+    width: parseInt(selectedBox.style.width) || 0,
+    height: parseInt(selectedBox.style.height) || 0
+  };
+  
+  dragStartX = e.clientX;
+  dragStartY = e.clientY;
+  
+  debug.log(`Resize started - original dimensions: ${originalBox.width}x${originalBox.height}`);
 }
 
 function resizeBox(e) {
-  if(!resizing)return;
-  const dx=e.clientX-dragStartX, dy=e.clientY-dragStartY, handle=resizeHandle.classList[1];
-  let{x,y,width,height}=originalBox;
-  if(handle.includes('right'))width=Math.max(10,width+dx);
-  if(handle.includes('bottom'))height=Math.max(10,height+dy);
-  if(handle.includes('left')){x+=dx;width-=dx;}
-  if(handle.includes('top')){y+=dy;height-=dy;}
-  selectedBox.style.left=`${x}px`;selectedBox.style.top=`${y}px`;selectedBox.style.width=`${width}px`;selectedBox.style.height=`${height}px`;
-  updateTagPosition(selectedBox);updateTagData(selectedBox);
-}
+  if (!resizing || !selectedBox || !resizeHandle) return;
 
-// Select/move boxes
-function selectBox(box,multi){if(!multi)clearSelection();box.classList.add('selected');addResizeHandles(box);selectedBox=box;}
-function clearSelection(){document.querySelectorAll('.draw-box').forEach(b=>{b.classList.remove('selected');b.querySelectorAll('.resize-handle').forEach(h=>h.remove());});selectedBox=null;}
-function addResizeHandles(box){['top-left','top-right','bottom-left','bottom-right'].forEach(pos=>{const h=document.createElement('div');h.className=`resize-handle ${pos}`;box.appendChild(h);});}
-
-function startMoving(e){dragStartX=e.clientX-parseInt(selectedBox.style.left);dragStartY=e.clientY-parseInt(selectedBox.style.top);document.addEventListener('mousemove',moveBox);document.addEventListener('mouseup',stopMoving);}
-function moveBox(e){const rect=imageContainer.getBoundingClientRect();let x=e.clientX-dragStartX,y=e.clientY-dragStartY;x=Math.max(0,Math.min(rect.width-selectedBox.offsetWidth,x));y=Math.max(0,Math.min(rect.height-selectedBox.offsetHeight,y));selectedBox.style.left=`${x}px`;selectedBox.style.top=`${y}px`;updateTagPosition(selectedBox);updateTagData(selectedBox);}
-function stopMoving(){document.removeEventListener('mousemove',moveBox);document.removeEventListener('mouseup',stopMoving);}
-
-function updateTagPosition(box){
-  const i=parseInt(box.dataset.index);if(isNaN(i))return;
-  const x=parseInt(box.style.left),y=parseInt(box.style.top),w=parseInt(box.style.width),h=parseInt(box.style.height);
-  const entry=document.querySelector(`#tag-log .tag-entry:nth-child(${i+1})`);
-  if(entry)entry.querySelector('.tag-position').textContent=`(${x}, ${y}) | ${w}×${h}`;
-}
-
-function updateTagData(box){
-  const i=parseInt(box.dataset.index);if(isNaN(i))return;
-  Object.assign(tagData[i],{x:parseInt(box.style.left),y:parseInt(box.style.top),width:parseInt(box.style.width),height:parseInt(box.style.height)});
-  if(imageName){allImageData[imageName]=[...tagData];saveAllProgress();}
-}
-
-// Tag save/cancel handlers
-function saveTag(){
-  const idx=presetDropdown.value;if(!currentBox||idx==='')return;
-  const hint=currentHints[idx];
-  currentBox.title=`${hint.label}\n${hint.covers.join(', ')}`;currentBox.classList.add('selected');
-  tagData.push({label:hint.label,codes:hint.covers,severity:hint.severity||"🟡",x:parseInt(currentBox.style.left),y:parseInt(currentBox.style.top),width:parseInt(currentBox.style.width),height:parseInt(currentBox.style.height)});
-  currentBox.dataset.index=tagData.length-1;updateTagLog();allImageData[imageName]=[...tagData];saveAllProgress();popup.style.display='none';currentBox=null;showStatusMessage('✅ Violation tag added');
-}
-
-function cancelTag(){if(currentBox)currentBox.remove();popup.style.display='none';}
-
-// Update tag log
-function updateTagLog(){
-  tagLog.innerHTML='';tagData.forEach(t=>{tagLog.innerHTML+=`<div class="tag-entry"><div>${t.severity}<strong>${t.label}</strong></div><div>${t.codes.join(', ')}</div><div class="tag-position">(${t.x}, ${t.y}) | ${t.width}×${t.height})</div></div>`;});
-}
-
-// End of Part 3
-
-
-
-
-
-// Export data to CSV
-function exportToCSV(){
-  if(imageName)saveTagsForCurrentImage();
-  if(!Object.keys(allImageData).length){showStatusMessage('⚠️ No data to export',4000);return;}
-  let csv='Image,Severity,Label,Codes,X,Y,Width,Height\n';
-  for(const[img,tags]of Object.entries(allImageData)){
-    tags.forEach(t=>csv+=`"${img}","${t.severity}","${t.label}",${t.codes.join(';')},${t.x},${t.y},${t.width},${t.height}\n`);
+  const containerRect = imageContainer.getBoundingClientRect();
+  const dx = e.clientX - dragStartX;
+  const dy = e.clientY - dragStartY;
+  const handle = resizeHandle.className.split(' ')[1];
+  
+  let newLeft = originalBox.x;
+  let newTop = originalBox.y;
+  let newWidth = originalBox.width;
+  let newHeight = originalBox.height;
+  
+  switch (handle) {
+    case 'top-left':
+      newLeft = Math.min(originalBox.x + originalBox.width - 20, originalBox.x + dx);
+      newTop = Math.min(originalBox.y + originalBox.height - 20, originalBox.y + dy);
+      newWidth = originalBox.width - (newLeft - originalBox.x);
+      newHeight = originalBox.height - (newTop - originalBox.y);
+      break;
+    case 'top-right':
+      newTop = Math.min(originalBox.y + originalBox.height - 20, originalBox.y + dy);
+      newWidth = Math.max(20, originalBox.width + dx);
+      newHeight = originalBox.height - (newTop - originalBox.y);
+      break;
+    case 'bottom-left':
+      newLeft = Math.min(originalBox.x + originalBox.width - 20, originalBox.x + dx);
+      newWidth = originalBox.width - (newLeft - originalBox.x);
+      newHeight = Math.max(20, originalBox.height + dy);
+      break;
+    case 'bottom-right':
+      newWidth = Math.max(20, originalBox.width + dx);
+      newHeight = Math.max(20, originalBox.height + dy);
+      break;
   }
-  const blob=new Blob([csv],{type:'text/csv'}),url=URL.createObjectURL(blob),a=document.createElement('a');
-  a.href=url;a.download='violations.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);
-  showStatusMessage('✅ CSV exported');
+  
+  const maxX = containerRect.width - newWidth;
+  const maxY = containerRect.height - newHeight;
+  
+  newLeft = Math.max(0, Math.min(newLeft, maxX));
+  newTop = Math.max(0, Math.min(newTop, maxY));
+  
+  selectedBox.style.left = `${newLeft}px`;
+  selectedBox.style.top = `${newTop}px`;
+  selectedBox.style.width = `${newWidth}px`;
+  selectedBox.style.height = `${newHeight}px`;
+  
+  updateTagPosition(selectedBox);
+  updateTagData(selectedBox);
 }
 
-// Sync to Airtable
-const AIRTABLE_TOKEN='YOUR_AIRTABLE_API_TOKEN';
-const AIRTABLE_BASE_ID='YOUR_AIRTABLE_BASE_ID';
-const AIRTABLE_TABLE_NAME='ExportedViolations';
 
-async function sendToAirtable(){
-  if(!Object.keys(allImageData).length){alert("No violation tags to sync.");return;}
-  let totalSent=0;
-  for(const[imgName,tags]of Object.entries(allImageData)){
-    for(const tag of tags){
-      const record={fields:{"Image":imgName,"Severity":tag.severity||"🟡","Label":tag.label||"","Codes":(tag.codes||[]).join(';'),"X":tag.x,"Y":tag.y,"Width":tag.width,"Height":tag.height}};
-      try{
-        const res=await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`,{
-          method:"POST",headers:{Authorization:`Bearer ${AIRTABLE_TOKEN}`,"Content-Type":"application/json"},body:JSON.stringify(record)});
-        if(!res.ok)throw new Error(`Airtable error: ${res.statusText}`);totalSent++;
-      }catch(err){console.error(err);alert(`❌ Error syncing records.`);return;}
+
+
+
+
+
+
+// Box selection and movement functions
+function selectBox(box, multi) {
+  debug.log(`Selecting box (multi: ${multi})`);
+  if (!multi) clearSelection();
+  box.classList.add('selected');
+  addResizeHandles(box);
+  selectedBox = box;
+}
+
+function clearSelection() {
+  debug.log('Clearing all selections');
+  document.querySelectorAll('.draw-box').forEach(b => {
+    b.classList.remove('selected');
+    b.querySelectorAll('.resize-handle').forEach(h => h.remove());
+  });
+  selectedBox = null;
+}
+
+function addResizeHandles(box) {
+  debug.log('Adding resize handles to box');
+  box.querySelectorAll('.resize-handle').forEach(h => h.remove());
+  
+  ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach(pos => {
+    const handle = document.createElement('div');
+    handle.className = `resize-handle ${pos}`;
+    box.appendChild(handle);
+  });
+}
+
+function startMoving(e) {
+  if (!selectedBox) return;
+  debug.log('Starting box movement');
+  dragStartX = e.clientX - parseInt(selectedBox.style.left);
+  dragStartY = e.clientY - parseInt(selectedBox.style.top);
+  document.addEventListener('mousemove', moveBox);
+  document.addEventListener('mouseup', stopMoving);
+}
+
+function moveBox(e) {
+  if (!selectedBox) return;
+  const rect = imageContainer.getBoundingClientRect();
+  let newX = e.clientX - dragStartX;
+  let newY = e.clientY - dragStartY;
+
+  newX = Math.max(0, Math.min(newX, rect.width - selectedBox.offsetWidth));
+  newY = Math.max(0, Math.min(newY, rect.height - selectedBox.offsetHeight));
+
+  selectedBox.style.left = `${newX}px`;
+  selectedBox.style.top = `${newY}px`;
+
+  updateTagPosition(selectedBox);
+  updateTagData(selectedBox);
+}
+
+function stopMoving() {
+  debug.log('Stopping box movement');
+  document.removeEventListener('mousemove', moveBox);
+  document.removeEventListener('mouseup', stopMoving);
+}
+
+function updateTagPosition(box) {
+  const idx = parseInt(box.dataset.index);
+  if (isNaN(idx)) return;
+  
+  const x = parseInt(box.style.left);
+  const y = parseInt(box.style.top);
+  const w = parseInt(box.style.width);
+  const h = parseInt(box.style.height);
+
+  const entry = document.querySelector(`#tag-log .tag-entry:nth-child(${idx + 1})`);
+  if (entry) {
+    entry.querySelector('.tag-position').textContent = `(${x}, ${y}) | ${w}×${h}`;
+  }
+}
+
+function updateTagData(box) {
+  const idx = parseInt(box.dataset.index);
+  if (isNaN(idx)) return;
+  
+  debug.log(`Updating tag data for index ${idx}`);
+  tagData[idx].x = parseInt(box.style.left);
+  tagData[idx].y = parseInt(box.style.top);
+  tagData[idx].width = parseInt(box.style.width);
+  tagData[idx].height = parseInt(box.style.height);
+  
+  if (imageName) {
+    allImageData[imageName] = [...tagData];
+    saveAllProgress();
+  }
+}
+
+// Tag creation and management
+function saveTag() {
+  const idx = presetDropdown.value;
+  if (!currentBox || idx === '') {
+    debug.log('Save tag attempted with no box or selection');
+    return;
+  }
+
+  debug.log(`Saving new tag with violation index ${idx}`);
+  const hint = currentHints[idx];
+  currentBox.title = `${hint.label}\n${hint.covers.join(', ')}`;
+  currentBox.classList.add('selected');
+
+  const boxData = {
+    label: hint.label,
+    codes: hint.covers,
+    severity: hint.severity || "🟡",
+    x: parseInt(currentBox.style.left),
+    y: parseInt(currentBox.style.top),
+    width: parseInt(currentBox.style.width),
+    height: parseInt(currentBox.style.height)
+  };
+
+  tagData.push(boxData);
+  currentBox.dataset.index = tagData.length - 1;
+  updateTagLog();
+  
+  if (imageName) {
+    allImageData[imageName] = [...tagData];
+    saveAllProgress();
+  }
+
+  popup.style.display = 'none';
+  currentBox = null;
+  showStatusMessage('✅ Violation tag added');
+}
+
+function updateTagLog() {
+  debug.log(`Updating tag log with ${tagData.length} entries`);
+  tagLog.innerHTML = '';
+  tagData.forEach((tag, index) => {
+    const div = document.createElement('div');
+    div.className = 'tag-entry';
+    const severityIndicator = tag.severity || "🟡";
+    div.innerHTML = `
+      <div class="tag-label">${severityIndicator} <strong>${tag.label}</strong></div>
+      <div class="tag-codes">${tag.codes.join(', ')}</div>
+      <div class="tag-position">(${tag.x}, ${tag.y}) | ${tag.width}×${tag.height}</div>
+    `;
+    tagLog.appendChild(div);
+  });
+}
+
+function cancelTag() {
+  debug.log('Cancelling tag creation');
+  if (currentBox) {
+    currentBox.remove();
+    currentBox = null;
+  }
+  popup.style.display = 'none';
+}
+
+// Data export functions
+function exportToCSV() {
+  debug.log('Starting CSV export');
+  if (imageName) saveTagsForCurrentImage();
+  
+  if (Object.keys(allImageData).length === 0) {
+    debug.log('Export attempted with no data');
+    alert('No violations to export!');
+    return;
+  }
+
+  let csv = 'Image,Severity,Label,Codes,X,Y,Width,Height\n';
+  let totalTags = 0;
+  
+  for (const [img, tags] of Object.entries(allImageData)) {
+    if (tags.length === 0) continue;
+    totalTags += tags.length;
+    
+    tags.forEach(t => {
+      const severity = t.severity || "🟡";
+      csv += `"${img}","${severity}","${t.label}",${t.codes.join(';')},${t.x},${t.y},${t.width},${t.height}\n`;
+    });
+  }
+
+  debug.log(`Exporting ${totalTags} tags to CSV`);
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8,' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'violations.csv';
+  link.click();
+  showStatusMessage('✅ CSV file exported');
+}
+
+
+
+
+
+
+
+
+// Save all progress to localStorage
+function saveAllProgress() {
+  try {
+    debug.log('Saving all progress to localStorage');
+    localStorage.setItem('violationTagsAll', JSON.stringify(allImageData));
+    return true;
+  } catch (e) {
+    debug.log('Error saving to localStorage:', e);
+    console.error('Error saving data:', e);
+    showStatusMessage('⚠️ Error saving data', 5000);
+    return false;
+  }
+}
+
+// Load all progress from localStorage
+function loadAllProgress() {
+  debug.log('Loading progress from localStorage');
+  const saved = localStorage.getItem('violationTagsAll');
+  if (saved) {
+    try {
+      allImageData = JSON.parse(saved);
+      debug.log(`Loaded data for ${Object.keys(allImageData).length} images`);
+      return true;
+    } catch (e) {
+      debug.log('Error parsing saved data:', e);
+      console.error('Error loading saved data:', e);
+      showStatusMessage('⚠️ Error loading saved data', 5000);
+      allImageData = {};
+      return false;
     }
   }
-  alert(`✅ Sent ${totalSent} violations.`);
+  debug.log('No saved data found in localStorage');
+  allImageData = {};
+  return false;
 }
 
-// Delete selected boxes
-function deleteSelectedBoxes(){
-  const boxes=document.querySelectorAll('.draw-box.selected');
-  if(!boxes.length){showStatusMessage('⚠️ No boxes selected',4000);return;}
-  boxes.forEach(box=>{
-    tagData.splice(parseInt(box.dataset.index),1);box.remove();
+// Clear data for current image
+function clearImageData() {
+  if (!imageName) {
+    debug.log('Clear attempted with no image loaded');
+    showStatusMessage('⚠️ No image loaded');
+    return;
+  }
+  
+  debug.log(`Clearing data for image: ${imageName}`);
+  
+  // Complete cleanup sequence
+  clearAllBoxes();
+  delete allImageData[imageName];
+  saveAllProgress();
+  
+  tagData = [];
+  currentHints = [];
+  updateTagLog();
+  sidebarHints.innerHTML = 'Upload image to see violations.';
+  
+  showStatusMessage(`✅ All data for ${imageName} cleared`);
+}
+
+// Clear all boxes from UI
+function clearAllBoxes() {
+  // Remove all draw boxes and their resize handles
+  document.querySelectorAll('.draw-box').forEach(box => {
+    box.querySelectorAll('.resize-handle').forEach(handle => handle.remove());
+    box.remove();
   });
-  document.querySelectorAll('.draw-box').forEach((b,i)=>{b.dataset.index=i;});
-  updateTagLog();if(imageName){allImageData[imageName]=[...tagData];saveAllProgress();}
-  showStatusMessage(`✅ Deleted ${boxes.length} violation(s)`);
+  
+  // Clear any pending box creation
+  if (currentBox) {
+    currentBox.remove();
+    currentBox = null;
+  }
+  
+  // Reset drawing state
+  drawing = false;
+  resizing = false;
+  selectedBox = null;
+  
+  updateTagLog();
 }
 
-// Clear image data
-function clearImageData(){
-  if(!imageName){showStatusMessage('⚠️ No image loaded',4000);return;}
-  clearAllBoxes();delete allImageData[imageName];saveAllProgress();tagData=[];currentHints=[];updateTagLog();sidebarHints.innerHTML='Upload image to see violations.';showStatusMessage(`✅ Cleared data for ${imageName}`);
+// Delete selected boxes with enhanced logging
+function deleteSelectedBoxes() {
+  const selectedBoxes = document.querySelectorAll('.draw-box.selected');
+  debug.log(`Delete selected triggered - ${selectedBoxes.length} boxes selected`);
+  
+  if (selectedBoxes.length === 0) {
+    showStatusMessage('⚠️ No boxes selected');
+    return;
+  }
+  
+  let indexesToRemove = [];
+  
+  selectedBoxes.forEach(box => {
+    const index = parseInt(box.dataset.index);
+    if (!isNaN(index)) {
+      indexesToRemove.push(index);
+      debug.log(`Marking box ${index} for deletion`);
+    }
+    box.remove();
+  });
+  
+  // Sort in descending order for safe removal
+  indexesToRemove.sort((a, b) => b - a).forEach(index => {
+    debug.log(`Removing tag at index ${index}`);
+    tagData.splice(index, 1);
+  });
+  
+  // Update remaining box indices
+  document.querySelectorAll('.draw-box').forEach((box, idx) => {
+    box.dataset.index = idx;
+  });
+  
+  updateTagLog();
+  
+  if (imageName) {
+    debug.log(`Updating saved data after deletion`);
+    allImageData[imageName] = [...tagData];
+    saveAllProgress();
+  }
+  
+  showStatusMessage(`✅ Deleted ${indexesToRemove.length} violation tag(s)`);
 }
 
-// Clear boxes helper
-function clearAllBoxes(){document.querySelectorAll('.draw-box').forEach(b=>b.remove());currentBox=selectedBox=null;drawing=resizing=false;updateTagLog();}
-
-// Save progress
-function saveProgress(){
-  if(imageName){saveTagsForCurrentImage();showStatusMessage('✅ Progress saved');}
-  else showStatusMessage('⚠️ No image loaded',4000);
+// Save progress button handler
+function saveProgress() {
+  if (imageName) {
+    debug.log('Manual save progress triggered');
+    saveTagsForCurrentImage();
+    showStatusMessage('✅ Progress saved!');
+  } else {
+    debug.log('Manual save attempted with no image loaded');
+    showStatusMessage('⚠️ No image loaded to save!');
+  }
 }
 
-// Final initialization on DOMContentLoaded
-window.addEventListener('DOMContentLoaded',init);
+// UI utility functions
+function showStatusMessage(message, duration = 3000) {
+  debug.log(`Status message: ${message}`);
+  statusMessage.textContent = message;
+  statusMessage.style.display = 'block';
+  setTimeout(() => {
+    statusMessage.style.display = 'none';
+  }, duration);
+}
 
-// === End of Complete Violation Tagger HTML ===
+// --- DROPDOWN IMAGE SELECTOR LOGIC ---
+
+const imageMap = {
+  "Equifax": {
+    "AL": ["2024-04-25-P57", "2024-04-25-P58"],
+    "BB": ["2024-04-25-P20"],
+    "BK": ["2024-04-25-P16", "2024-04-25-P17"],
+    "BY": ["2024-04-25-P34", "2024-04-25-P35"],
+    "C1": ["2024-04-25-P26"],
+    "C2": ["2024-04-25-P28"],
+    "CR": ["2024-04-25-P18", "2024-04-25-P19"],
+    "DB": ["2024-04-25-P30", "2024-04-25-P31"],
+    "DL": ["2024-04-25-P50", "2024-04-25-P51"],
+    "HD": ["2024-04-25-P32", "2024-04-25-P33"],
+    "JP": ["2024-04-25-P24"],
+    "MF": ["2024-04-25-P67"],
+    "SR": ["2024-04-25-P22"]
+  },
+  "Experian": {
+    "AL": ["2024-04-25-P05"],
+    "BB": ["2024-04-25-P08", "2024-04-25-P09"],
+    "BK": ["2024-04-25-P06"],
+    "BY": ["2024-04-25-P07"],
+    "C1": ["2024-04-25-P11"],
+    "C2": ["2024-04-25-P12"],
+    "CR": ["2024-04-25-P16", "2024-04-25-P17"],
+    "DB": ["2024-04-25-P22"],
+    "DL": ["2024-04-25-P21", "2024-04-25-P22"],
+    "HD": ["2024-04-25-P34", "2024-04-25-P35"],
+    "JP": ["2024-04-25-P23"],
+    "MF": ["2024-04-25-P25"],
+    "SR": ["2024-04-25-P31"]
+  },
+  "TransUnion": {
+    "AL": ["2024-04-25-P07"],
+    "BB": ["2024-04-25-P14"],
+    "BK": ["2024-04-25-P10"],
+    "BY": ["2024-04-25-P12"],
+    "C1": ["2024-04-25-P17"],
+    "C2": ["2024-04-25-P20"],
+    "CR": ["2024-04-25-P26"],
+    "DB": ["2024-04-25-P30"],
+    "DL": ["2024-04-25-P27"],
+    "JP": ["2024-04-25-P28"],
+    "MF": ["2024-04-25-P31"],
+    "SR": ["2024-04-25-P34"]
+  }
+};
+
+function updateCreditorOptions() {
+  const bureau = document.getElementById("bureauSelect").value;
+  const creditorSelect = document.getElementById("creditorSelect");
+  creditorSelect.innerHTML = `<option disabled selected>Select Creditor</option>`;
+
+  if (!imageMap[bureau]) return;
+
+  Object.keys(imageMap[bureau]).forEach(creditor => {
+    const opt = document.createElement("option");
+    opt.value = creditor;
+    opt.textContent = creditor;
+    creditorSelect.appendChild(opt);
+  });
+
+  creditorSelect.disabled = false;
+  document.getElementById("dateSelect").innerHTML = '';
+  document.getElementById("dateSelect").disabled = true;
+}
+
+function updateDateOptions() {
+  const bureau = document.getElementById("bureauSelect").value;
+  const creditor = document.getElementById("creditorSelect").value;
+  const dateSelect = document.getElementById("dateSelect");
+
+  dateSelect.innerHTML = `<option disabled selected>Select Date + Page</option>`;
+
+  if (!imageMap[bureau] || !imageMap[bureau][creditor]) return;
+
+  imageMap[bureau][creditor].forEach(entry => {
+    const opt = document.createElement("option");
+    opt.value = `${creditor}-${bureau.charAt(0).toUpperCase()}${bureau.slice(1,2)}-${entry}.png`;
+    opt.textContent = entry;
+    dateSelect.appendChild(opt);
+  });
+
+  dateSelect.disabled = false;
+}
+
+function loadSelectedImage() {
+  const bureau = document.getElementById("bureauSelect").value;
+  const selectedFilename = document.getElementById("dateSelect").value;
+
+  if (!bureau || !selectedFilename) {
+    alert("Please select all fields.");
+    return;
+  }
+
+  const path = `${bureau.charAt(0).toUpperCase() + bureau.slice(1).toLowerCase()}/${selectedFilename}`;
+  imageName = selectedFilename;
+  
+  // Clear existing data first
+  clearAllBoxes();
+  tagData = [];
+  currentHints = [];
+  updateTagLog();
+  sidebarHints.innerHTML = 'Upload image to see violations.';
+  
+  document.getElementById("report-img").src = path;
+  showStatusMessage(`✅ Loaded: ${path}`);
+  
+  // Load hints for the new image
+  loadHintsForImage();
+  initViolationDropdown();
+}
+
+
+
+
+
+
+// Airtable Sync Settings
+const AIRTABLE_TOKEN = 'patiiNzMeWbsIHD29.b5c3d562339758fef9d454a5f7b25aa5702f10a8e0d1506d8682de7ddbf80e77';
+const AIRTABLE_BASE_ID = 'apppDRYBhN8W65aL5';
+const AIRTABLE_TABLE_NAME = 'ExportedViolations';
+
+async function sendToAirtable() {
+  if (!Object.keys(allImageData).length) {
+    alert("No violation tags to sync.");
+    return;
+  }
+
+  let totalSent = 0;
+
+  for (const [imgName, tags] of Object.entries(allImageData)) {
+    for (const tag of tags) {
+      const record = {
+        fields: {
+          "Image": imgName,
+          "Severity": tag.severity || "🟡",
+          "Label": tag.label || "",
+          "Codes": (tag.codes || []).join(';'),
+          "X": tag.x,
+          "Y": tag.y,
+          "Width": tag.width,
+          "Height": tag.height
+        }
+      };
+
+      try {
+        const res = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(record)
+        });
+
+        if (!res.ok) throw new Error(`Airtable error: ${res.statusText}`);
+        totalSent++;
+
+      } catch (err) {
+        console.error("Failed to send to Airtable:", err);
+        alert(`❌ Error sending some records. Check console.`);
+        return;
+      }
+    }
+  }
+
+  alert(`✅ Successfully sent ${totalSent} violations to Airtable.`);
+}
+
+// Set up all event listeners
+function setupEventListeners() {
+  debug.log('Setting up event listeners...');
+  fileInput.addEventListener('change', handleImageUpload);
+  document.getElementById('exportCSV').addEventListener('click', exportToCSV);
+  deleteButton.addEventListener('click', deleteSelectedBoxes);
+  toggleMultiSelectBtn.addEventListener('click', toggleMultiSelectMode);
+  saveProgressButton.addEventListener('click', saveProgress);
+  document.getElementById('clearImageData').addEventListener('click', clearImageData);
+  saveButton.addEventListener('click', saveTag);
+  cancelButton.addEventListener('click', cancelTag);
+
+  document.getElementById('syncToAirtable').addEventListener('click', sendToAirtable);
+
+  // Drawing and selection handlers
+  imageContainer.addEventListener('mousedown', startDrawingOrSelecting);
+  imageContainer.addEventListener('mousemove', handleMouseMove);
+  imageContainer.addEventListener('mouseup', endAction);
+  document.addEventListener('mousemove', resizeBox);
+}
+
+// Initialize the application when DOM is loaded
+window.addEventListener('DOMContentLoaded', function() {
+  debug.log('DOM fully loaded - initializing application');
+  init();
+});
+
+// Debug initialization message
+debug.log('Violation Tagger script loaded');
 </script>
 </body>
 </html>
+
+
 
