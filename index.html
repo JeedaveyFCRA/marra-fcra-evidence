@@ -1292,9 +1292,10 @@ function updateDateOptions() {
 
 function loadSelectedImage() {
   const bureau = document.getElementById("bureauSelect").value;
+  const creditor = document.getElementById("creditorSelect").value;
   const selectedFilename = document.getElementById("dateSelect").value;
 
-  if (!bureau || !selectedFilename) {
+  if (!bureau || !creditor || !selectedFilename) {
     alert("Please select all fields.");
     return;
   }
@@ -1304,6 +1305,10 @@ function loadSelectedImage() {
     saveTagsForCurrentImage();
   }
   
+  // Set new image name (this will be used by loadHintsForImage)
+  imageName = selectedFilename;
+  debug.log(`Setting image name to: ${imageName}`);
+  
   // Clear all existing violation boxes and reset state
   clearAllBoxes();
   tagData = [];
@@ -1311,45 +1316,52 @@ function loadSelectedImage() {
   updateTagLog();
   sidebarHints.innerHTML = 'Upload image to see violations.';
   
-  // Set new image name
-  imageName = selectedFilename;
-  
-  // Construct the path
-  const path = `${bureau.charAt(0).toUpperCase() + bureau.slice(1).toLowerCase()}/${selectedFilename}`;
-  debug.log(`Loading selected image from: ${path}`);
+  // Simulate file load process
+  const img = document.getElementById("report-img");
   
   // Show loading status
   showStatusMessage('⏳ Loading image...', 0);
   
-  // Set the image source
-  const img = document.getElementById("report-img");
-  
-  // Set up onload handler before changing src
+  // Set up onload handler
   img.onload = function() {
-    debug.log('Image onload event triggered for selected image');
+    debug.log('Image onload event triggered for dropdown selection');
     
-    // Full cleanup before loading new content
-    clearAllBoxes();
-    tagData = [];
-    
-    loadHintsForImage();
-    initViolationDropdown();
-    clearSelection();
-    loadTagsForCurrentImage();
-    
-    showStatusMessage(`✅ Image loaded: ${imageName}`);
-    debug.log(`Image dimensions: ${img.naturalWidth}x${img.naturalHeight}`);
-    debug.log(`Rendered dimensions: ${img.width}x${img.height}`);
+    // Process image after load completes
+    setTimeout(() => {
+      // Load hints based on the bureau code in the filename
+      loadHintsForImage();
+      initViolationDropdown();
+      clearSelection();
+      loadTagsForCurrentImage();
+      
+      showStatusMessage(`✅ Image loaded: ${imageName}`);
+      debug.log(`Image dimensions: ${img.naturalWidth}x${img.naturalHeight}`);
+      debug.log(`Rendered dimensions: ${img.width}x${img.height}`);
+    }, 100);
   };
   
   // Set up error handler
   img.onerror = function() {
-    debug.log('Image load error occurred');
+    debug.log(`Image load error occurred for: ${img.src}`);
     showStatusMessage('⚠️ Failed to load image', 5000);
   };
+
+  // Use a direct path to prevent caching issues
+  // For example, construct a path that includes the bureau code explicitly
+  let bureauCode = '';
+  if (bureau === 'Equifax') bureauCode = 'EQ';
+  else if (bureau === 'Experian') bureauCode = 'EX';
+  else if (bureau === 'TransUnion') bureauCode = 'TU';
   
-  // Set the image source to trigger loading
-  img.src = path;
+  // This will help loadHintsForImage() detect the bureau code
+  if (!imageName.includes(bureauCode)) {
+    imageName = `${bureauCode}-${imageName}`;
+    debug.log(`Updated image name with bureau code: ${imageName}`);
+  }
+  
+  // Set the image source - update this path as needed
+  img.src = selectedFilename;
+  debug.log(`Setting image src to: ${img.src}`);
 }
 
 
