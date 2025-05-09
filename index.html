@@ -1297,6 +1297,10 @@ function updateDateOptions() {
   dateSelect.disabled = false;
 }
 
+<!-- PASTE THIS CODE JUST BEFORE THE CLOSING </script> TAG -->
+<!-- REPLACES THE EXISTING loadSelectedImage() FUNCTION AND ADJACENT CODE -->
+
+// Fixed version of loadSelectedImage with proper tag loading
 function loadSelectedImage() {
   const bureau = document.getElementById("bureauSelect").value;
   const selectedFilename = document.getElementById("dateSelect").value;
@@ -1320,17 +1324,29 @@ function loadSelectedImage() {
 
   // Set new image name and path
   imageName = selectedFilename;
-  const path = `${bureau.charAt(0).toUpperCase() + bureau.slice(1).toLowerCase()}/${selectedFilename}`;
+  const path = `${bureau.toLowerCase()}/${selectedFilename}`;
   
   // Set up image loading handlers
   showStatusMessage('⏳ Loading image...', 0);
   
+  // Reset image src first to ensure onload fires
+  image.src = '';
+  
+  // Add timestamp to bypass cache
+  image.src = path + '?t=' + new Date().getTime();
+  
+  // Handle successful load
   image.onload = function() {
     debug.log('Image onload event triggered');
     showStatusMessage(`✅ Image loaded: ${imageName}`);
     
     // Load saved tags for this image
-    loadTagsForCurrentImage();
+    loadAllProgress(); // Ensure data is loaded
+    if (allImageData[imageName]) {
+      tagData = JSON.parse(JSON.stringify(allImageData[imageName]));
+      renderSavedTags();
+      updateTagLog();
+    }
     
     // Load appropriate hints
     loadHintsForImage();
@@ -1344,6 +1360,29 @@ function loadSelectedImage() {
     showStatusMessage('⚠️ Failed to load image', 5000);
     sidebarHints.innerHTML = 'Error loading image';
   };
+}
+
+// Also update the renderSavedTags function to ensure proper rendering
+function renderSavedTags() {
+  debug.log(`Rendering ${tagData.length} tags`);
+  
+  // Clear existing boxes first
+  clearAllBoxes();
+  
+  tagData.forEach((tag, index) => {
+    const box = document.createElement('div');
+    box.className = 'draw-box';
+    box.style.left = `${tag.x}px`;
+    box.style.top = `${tag.y}px`;
+    box.style.width = `${tag.width}px`;
+    box.style.height = `${tag.height}px`;
+    box.title = `${tag.label}\n${tag.codes.join(', ')}`;
+    box.dataset.index = index;
+    imageContainer.appendChild(box);
+  });
+}
+
+
 
   // Start loading the image
   image.src = path;
