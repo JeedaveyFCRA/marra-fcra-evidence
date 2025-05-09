@@ -658,30 +658,35 @@ function saveTagsForCurrentImage() {
   saveAllProgress();
 }
 
-// Load tags for current image
+// Load tags for current image - FINAL VERIFIED VERSION
 function loadTagsForCurrentImage() {
   debug.log(`Loading tags for image: ${imageName}`);
-  loadAllProgress();
+  loadAllProgress();  // Load from localStorage
   
-  // Clear existing data first
-  tagData = [];
-  clearAllBoxes();
+  // 1. Clear existing boxes from UI
+  clearAllBoxes();  
   
+  // 2. Reset tagData array
+  tagData = [];  
+  
+  // 3. Load saved tags if they exist
   if (allImageData[imageName]) {
-    debug.log(`Found ${allImageData[imageName].length} saved tags for this image`);
-    tagData = [...allImageData[imageName]];
+    debug.log(`Found ${allImageData[imageName].length} saved tags`);
+    tagData = JSON.parse(JSON.stringify(allImageData[imageName])); // Deep clone
     renderSavedTags();
   } else {
-    debug.log('No saved tags found for this image');
+    debug.log('No saved tags found');
   }
   
-  updateTagLog();
+  // 4. Update the tag log display
+  updateTagLog(); 
 }
 
-// Render saved tags on the image
+// Render saved tags - FINAL VERIFIED VERSION 
 function renderSavedTags() {
-  debug.log(`Rendering ${tagData.length} saved tags`);
-  document.querySelectorAll('.draw-box').forEach(box => box.remove());
+  debug.log(`Rendering ${tagData.length} tags`);
+  
+  const fragment = document.createDocumentFragment(); // Optimization
   
   tagData.forEach((tag, index) => {
     const box = document.createElement('div');
@@ -692,8 +697,10 @@ function renderSavedTags() {
     box.style.height = `${tag.height}px`;
     box.title = `${tag.label}\n${tag.codes.join(', ')}`;
     box.dataset.index = index;
-    imageContainer.appendChild(box);
+    fragment.appendChild(box);
   });
+  
+  imageContainer.appendChild(fragment);
 }
 
 // Drawing and selection functions with enhanced position tracking
@@ -1304,13 +1311,13 @@ function loadSelectedImage() {
     saveTagsForCurrentImage();
   }
 
-  // Clear all existing violation boxes and reset state
+  // Clear existing UI elements
   clearAllBoxes();
   tagData = [];
   currentHints = [];
   updateTagLog();
-  sidebarHints.innerHTML = 'Upload image to see violations.';
-  
+  sidebarHints.innerHTML = 'Loading image...';
+
   // Set new image name and path
   imageName = selectedFilename;
   const path = `${bureau.charAt(0).toUpperCase() + bureau.slice(1).toLowerCase()}/${selectedFilename}`;
@@ -1320,24 +1327,22 @@ function loadSelectedImage() {
   
   image.onload = function() {
     debug.log('Image onload event triggered');
+    showStatusMessage(`✅ Image loaded: ${imageName}`);
     
-    // Full cleanup before loading new content
-    clearAllBoxes();
-    tagData = [];
-    
-    loadHintsForImage();
-    initViolationDropdown();
-    clearSelection();
+    // Load saved tags for this image
     loadTagsForCurrentImage();
     
-    showStatusMessage(`✅ Image loaded: ${imageName}`);
+    // Load appropriate hints
+    loadHintsForImage();
+    initViolationDropdown();
+    
     debug.log(`Image dimensions: ${image.naturalWidth}x${image.naturalHeight}`);
-    debug.log(`Rendered dimensions: ${image.width}x${image.height}`);
   };
 
   image.onerror = function() {
     debug.log('Image load error occurred');
     showStatusMessage('⚠️ Failed to load image', 5000);
+    sidebarHints.innerHTML = 'Error loading image';
   };
 
   // Start loading the image
