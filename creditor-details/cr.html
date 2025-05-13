@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Credit Report Viewer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./cr-styles.css">
+</head>
+<body>
+  <!-- Top Row - Box1 through Box5 -->
+  <div class="header-row">
+    <!-- Box1 - Creditor Selection -->
+    <div class="box box1">
+      <img src="./assets/logos/Ally_Financial.svg" class="creditor-logo" alt="Creditor Logo">
+      <div class="creditor-name"></div>
+      <div class="institution-text">FINANCIAL INSTITUTION</div>
+    </div>
+
+    <!-- Box2: Equifax -->
+    <div class="box box2" data-bureau="equifax">
+      <img src="/creditor-details/assets/logos/EQ_Logo.png" class="bureau-logo" alt="Equifax">
+      <img src="/creditor-details/assets/logos/EQ_White_Logo.png" class="bureau-logo selected-logo" style="display:none" alt="Equifax">
+      <div class="select-text">{ SELECT A CREDIT BUREAU }</div>
+    </div>
+
+    <!-- Box3: Experian -->
+    <div class="box box3" data-bureau="experian">
+      <img src="/creditor-details/assets/logos/EX_Logo.svg" class="bureau-logo" alt="Experian">
+      <img src="/creditor-details/assets/logos/EX_White_Logo.svg" class="bureau-logo selected-logo" style="display:none" alt="Experian">
+      <div class="select-text">{ SELECT A CREDIT BUREAU }</div>
+    </div>
+
+    <!-- Box4: TransUnion -->
+    <div class="box box4" data-bureau="transunion">
+  <img src="/creditor-details/assets/logos/TU_Logo.svg" class="bureau-logo default-logo" alt="TransUnion">
+  <img src="/creditor-details/assets/logos/TU_White_Logo.svg" class="bureau-logo selected-logo" style="display:none" alt="TransUnion Selected">
+  <div class="select-text">{ SELECT A CREDIT BUREAU }</div>
+</div>
+
+    <!-- Box5 - Date Selector -->
+    <div class="box box5">
+      <!-- Date images will be dynamically inserted via JS -->
+    </div>
+  </div>
+
+  <!-- Box6 - Violation Tracker -->
+  <div class="box box6">
+    <img src="/creditor-details/assets/ui/MagGlass.png" class="logo default-logo" alt="Violation Tracker">
+    <img src="/creditor-details/assets/ui/MagGlass-hover.png" class="logo hover-logo" style="display:none" alt="Violation Tracker Hover">
+    <div class="box-text">FCRA VIOLATION<br>OCCURRENCES TRACKER®</div>
+  </div>
+
+  <!-- Box7 - Print Reports -->
+  <div class="box box7">
+    <img src="/creditor-details/assets/ui/PrintCR.png" class="logo default-logo" alt="Print Reports">
+    <img src="/creditor-details/assets/ui/PrintCR-hover.png" class="logo hover-logo" style="display:none" alt="Print Reports Hover">
+    <div class="box-text">PRINT FULL<br>CREDIT REPORTS</div>
+  </div>
+
+  <!-- Box8 - Credit Denials -->
+  <div class="box box8">
+    <img src="/creditor-details/assets/ui/Denial.png" class="logo default-logo" alt="Credit Denials">
+    <img src="/creditor-details/assets/ui/Denial-hover.png" class="logo hover-logo" style="display:none" alt="Credit Denials Hover">
+    <div class="box-text">CREDIT<br>DENIALS</div>
+  </div>
+
+  <!-- Box9 - Emotional Impact -->
+  <div class="box box9">
+    <img src="/creditor-details/assets/ui/BrokenHeart.svg" class="logo default-logo" alt="Emotional Impact">
+    <img src="/creditor-details/assets/ui/BrokenHeart-hover.svg" class="logo hover-logo" style="display:none" alt="Emotional Impact Hover">
+    <div class="box-text">EMOTIONAL IMPACT<br>STATEMENT</div>
+  </div>
+
+  <!-- Main Content Area: CR-box1 -->
+<div class="cr-box1">
+  <div class="cr-placeholder-text">Reports will appear here</div>
+</div>
+
+  <!-- Violations Summary Box -->
+  <div class="vio-sum-box">
+    <h3>REVIEW FOR VIOLATIONS</h3>
+    <ul class="violation-list">
+      <li><input type="checkbox" id="v-1681n"><label for="v-1681n"> §1681n – Willful Noncompliance</label></li>
+      <li><input type="checkbox" id="v-1681eb"><label for="v-1681eb">§1681e(b) – Failure to Ensure Accuracy</label></li>
+      <li><input type="checkbox" id="v-1681s2a1a"><label for="v-1681s2a1a">§1681s-2(a)(1)(A) – Failure to Update After Notice</label></li>
+      <li><input type="checkbox" id="v-1681i1a"><label for="v-1681i1a">§1681i(a)(1)(A) – Failure to Reinvestigate Dispute</label></li>
+      <li><input type="checkbox" id="v-1681s2b"><label for="v-1681s2b">§1681s-2(b) – Failure to Investigate Furnisher Dispute</label></li>
+      <li><input type="checkbox" id="v-1681cf"><label for="v-1681cf">§1681c(f) – Misreporting Discharged Debt</label></li>
+      <li><input type="checkbox" id="v-1681i5a"><label for="v-1681i5a">§1681i(a)(5)(A) – Failure to Delete Inaccurate Info</label></li>
+      <li><input type="checkbox" id="v-1681o"><label for="v-1681o">§1681o – Negligent Noncompliance</label></li>
+      <li><input type="checkbox" id="v-1681c1"><label for="v-1681c1">§1681c(a)(1) – Reporting Obsolete Info</label></li>
+      <li><input type="checkbox" id="v-1681g1"><label for="v-1681g1">§1681g(a)(1) – Failure to Disclose Accurate Info</label></li>
+      <li><input type="checkbox" id="v-1681c1b"><label for="v-1681c1b">§1681c-1(b) – Failure to Block Fraudulent Info</label></li>
+    </ul>
+    <div class="violation-total">Total Violations: <span id="violation-count">0</span></div>
+    <div class="violation-actions">
+      <button>Annotated View</button>
+      <button>Full Equifax PDF – April 14</button>
+    </div>
+  </div>
+
+  <script src="./script.js"></script>
+</body>
+</html>

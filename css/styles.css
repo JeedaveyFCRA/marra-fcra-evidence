@@ -1,0 +1,632 @@
+ /* === CSS COLOR VARIABLES === */
+        :root {
+            --black: #111111;  /* Primary text color */
+            --white: #ffffff;  /* Background and card borders */
+            --red: #ff2a2a;    /* Primary accent for creditor cards */
+            --yellow: #ffde59; /* Unused in current design */
+            --gray: #e0e0e0;   /* Borders and dividers */
+            --blue: #2a3f54;   /* Used in print card headings */
+            --green: #1abb9c;  /* Unused in current design */
+        }
+
+ 
+        /* === BASE DOCUMENT STYLES === */
+        body {
+            font-family: 'Space Grotesk', sans-serif;  /* Body text font */
+            margin: 0;          /* Remove default margin */
+            padding: 0;         /* Remove default padding */
+            background: var(--white);  /* White background */
+            color: var(--black);  /* Default text color */
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+        
+        /* === HEADING STYLES === */
+        h1, h2, h3 {
+            font-family: "jaf-bernino-sans-comp", sans-serif;  /* Condensed font for headings */
+            font-weight: 800;   /* Extra-bold weight */
+            letter-spacing: 1px; /* Slight letter spacing */
+            margin: 0;          /* Remove default margins */
+        }
+        
+        h1 {
+            font-size: 8vw;     /* Responsive font size */
+            line-height: 1;     /* Tight line spacing */
+        }
+        
+        h2 {
+            font-size: 5vw;     /* Smaller responsive size */
+            line-height: 1;
+        }
+        
+/* === HERO SECTION ADJUSTMENTS === */
+    .hero {
+        height: auto;  /* Changed from 100vh to auto for natural height */
+        padding: 4rem 0;  /* Added vertical padding instead of full viewport height */
+        display: flex;
+        align-items: center;
+        background: var(--white);
+      /*  border-bottom: 0.5px solid var(--gray);  /* Made the gray rule finer */   */
+    }
+
+    .hero-inner {
+    max-width: 1300px;
+    margin-left: 6vw;       /* Changed from auto to 5vw for left alignment */
+    margin-right: auto;
+    padding-top: 4vw;
+    padding-left: 1rem;     /* Changed from 5vw to 1rem (~1 inch) */
+    padding-right: 5vw;
+}
+
+
+        
+        .hero h1 {
+            font-size: 8vw;     /* Matches global h1 */
+            margin-bottom: 0.0em; /* Remove bottom margin */
+        }
+        
+        .hero h2 {
+            font-size: 5vw;     /* Matches global h2 */
+            margin-bottom: 0em;  /* Remove bottom margin */
+        }
+        
+        .hero-subtitle {
+            font-size: 1.5rem;  /* Fixed subtitle size */
+            max-width: 600px;   /* Optimal line length */
+        }
+        
+        /* === CREDITOR GRID SYSTEM === */
+        .creditors-grid {
+            display: grid;  /* CSS Grid layout */
+            grid-template-columns: repeat(4, minmax(0, 1fr));  /* 4 equal columns */
+            gap: 1px;      /* White grid gaps */
+            margin: 2vw 0 5vw; /* Vertical spacing */
+            width: 100%;   /* Full width */
+            background: white;  /* Shows through gaps */
+        }
+        
+        .creditor-card {
+            background: var(--red);  /* Red card background */
+            padding: 2.5rem;   /* Internal spacing */
+            aspect-ratio: 1;    /* Perfect square */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;  /* Space content vertically */
+            transition: all 0.3s;  /* Smooth hover transition */
+            min-width: 0;      /* Fixes flexbox overflow */
+            position: relative; /* For pseudo-element */
+            z-index: 1;        /* Stacking order */
+            overflow: hidden; /* Prevents content from overflowing */
+        }
+        
+        /* White border overlay */
+        .creditor-card::after {
+            content: "";       /* Required for pseudo-element */
+            position: absolute; /* Cover entire card */
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 0.5px solid white;  /* Thin white border */
+            z-index: 2;       /* Above card content */
+            pointer-events: none;  /* Allows clicks through */
+        }
+        
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .creditors-grid {
+                grid-template-columns: repeat(2, 1fr);  /* 2 columns on mobile */
+            }
+            .creditor-card {
+                aspect-ratio: unset;  /* Flexible height */
+                min-height: 180px;   /* Minimum card height */
+            }
+        }
+        
+        /* === CARD STATES === */
+        .creditor-card:hover {
+            background: var(--black);  /* Black on hover */
+            color: var(--white);      /* White text on hover */
+	    transform: translateY(-8px) scale(1.03);
+	    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+        
+        /* === CARD CONTENT STYLES === */
+        .creditor-name {
+    	    font-size: 2rem;
+  	    font-weight: 800;
+ 	    margin-bottom: 0.3rem;
+}
+        
+        .creditor-violations {
+ 	   font-size: 0.9rem;
+           opacity: 1.0;
+
+}
+
+@keyframes gentlePulse {
+    0%, 100% {
+        opacity: 0.95;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.02);
+    }
+}
+
+
+
+        }
+        
+        .creditor-harm {
+            font-size: 1.2rem;  /* Damage amount size */
+            color: var(--red);  /* Red by default */
+        }
+        
+        /* Hover states */
+        .creditor-card:hover .creditor-harm {
+            color: var(--white);  /* White on hover */
+        }
+        
+        .creditor-card:hover .creditor-violations {
+            color: var(--red) !important;  /* Force red on hover */
+            opacity: 1 !important;        /* Force full opacity */
+        }
+        
+        /* === TIMELINE SECTION === */
+        .timeline-container {
+            display: flex;           /* Horizontal layout */
+            overflow-x: auto;        /* Enable scrolling */
+            scroll-snap-type: x mandatory;  /* Snap to items */
+            -webkit-overflow-scrolling: touch;  /* Smooth iOS scroll */
+            margin: 5vw 0;          /* Vertical spacing */
+        }
+        
+        .timeline-item {
+            flex: 0 0 20vw;         /* Fixed width items */
+            scroll-snap-align: start;  /* Snap alignment */
+            padding-right: 0vw;      /* No right padding */
+            position: relative;      /* For child positioning */
+            min-height: 120px;      /* Minimum height */
+        }
+        
+        .timeline-color-block {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;  /* Align content to bottom */
+            padding: 2rem;      /* Internal spacing */
+	    box-sizing: border-box; /* Add this to include padding in height calculation */
+   	    overflow: visible; /* Ensure content isn't clipped */
+
+        }
+        
+        /* Individual timeline item colors */
+        .timeline-item:nth-child(1) .timeline-color-block { background: #FFEE93; color: var(--black); }
+        .timeline-item:nth-child(2) .timeline-color-block { background: #FF9F1C; color: var(--black); }
+        .timeline-item:nth-child(3) .timeline-color-block { background: #FF6B6B; color: var(--white); }
+        .timeline-item:nth-child(4) .timeline-color-block { background: #4ECDC4; color: var(--black); }
+        .timeline-item:nth-child(5) .timeline-color-block { background: #1A535C; color: var(--white); }
+        .timeline-item:nth-child(6) .timeline-color-block { background: #6A4C93; color: var(--white); }
+        
+        .timeline-date {
+            font-size: 3rem;     /* Large date text */
+            color: inherit;      /* Inherits from parent */
+            margin-bottom: 1rem; /* Space below date */
+        }
+        
+        .timeline-content {
+            font-size: 1.0rem;   /* Normal text size */
+            line-height: 1.4;    /* Comfortable spacing */
+            max-width: 100%; /* Changed from 600px to 100% */
+            color: inherit;      /* Inherits from parent */
+ 	    word-wrap: break-word; /* Allow long words to break */
+            overflow-wrap: break-word; /* Modern alternative */
+            white-space: normal; /* Ensure text wraps */
+        }
+        
+        /* === PRINT SECTION === */
+        .print-section {
+            padding-top: 6vw;    /* Top spacing */
+        }
+        
+        .print-section h2 {
+            color: var(--black); /* Black heading */
+        }
+        
+        .print-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));  /* Responsive grid */
+            gap: 2rem;           /* Space between cards */
+            padding-bottom: 3vw; /* Bottom spacing */
+            padding-top: 1vw;    /* Top spacing */
+        }
+        
+        .print-card {
+            background: var(--white);  /* White background */
+            color: var(--black);       /* Black text */
+            padding: 2rem;             /* Internal spacing */
+            border-radius: 8px;        /* Rounded corners */
+            transition: all 0.3s;      /* Smooth hover */
+            transform: translateY(0);  /* Default position */
+
+        }
+        
+        .print-card:hover {
+            transform: translateY(-10px);  /* Lift effect */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);  /* Shadow */
+        }
+        
+        .print-card h3 {
+            color: var(--blue);   /* Blue heading */
+            margin-bottom: 1rem;  /* Space below */
+        }
+        
+        /* === AUDIO CONTROL === */
+        .audio-control {
+            position: fixed;      /* Fixed position */
+            bottom: 2rem;        /* From bottom */
+            right: 2rem;         /* From right */
+            width: 60px;         /* Fixed size */
+            height: 60px;
+            background: var(--black);  /* Black circle */
+            border-radius: 50%;   /* Perfect circle */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;      /* Clickable */
+            z-index: 100;         /* Above other content */
+            color: var(--white);  /* White icon */
+            font-size: 1.5rem;    /* Icon size */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);  /* Subtle shadow */
+        }
+        
+        /* === CRITICAL ITEMS (CARD DETAILS) === */
+        .creditor-critical-details {
+            margin-bottom: 1.5rem;  /* Space above damages */
+            padding-top: 0;       /* No top padding */
+	    transform: translateY(100%);
+	    transition: transform 0.4s ease-out, opacity 0.3s ease;
+	    opacity: 0;
+	    height: 0;
+	    padding: 0 !important;
+}
+
+
+
+
+.creditor-card:hover .creditor-critical-details {
+    transform: translateY(0);
+    opacity: 1;
+    height: auto;
+    padding: 1.2rem 0 0 !important;
+}
+
+
+
+        
+        .critical-item {
+            font-size: 0.85rem;   /* Small text */
+            line-height: 1.4;     /* Tight spacing */
+            margin-bottom: 0.5rem;  /* Space between items */
+            display: grid;
+            grid-template-columns: 120px 1fr;  /* Label-value pairs */
+            align-items: baseline;  /* Text alignment */
+            gap: 0.5rem;          /* Space between columns */
+            color: inherit;      /* Inherits from parent */
+        }
+        
+        .critical-label {
+            font-weight: 600;     /* Semi-bold */
+            padding-right: 0.5rem;  /* Right spacing */
+        }
+        
+        /* Normal state (red text) */
+        .creditor-card .critical-label {
+            color: var(--red);
+        }
+        
+        .creditor-card .critical-value {
+            color: var(--red);
+        }
+        
+        /* Hover state (white text) */
+        .creditor-card:hover .critical-label,
+        .creditor-card:hover .critical-value {
+            color: var(--white);
+        }
+        
+        
+
+
+
+/* ===== COMPLETE MOBILE & TABLET RESPONSIVE SECTION ===== */
+@media (max-width: 768px) {
+    /* Phone Layout (Single Column) */
+    
+    /* Typography */
+    h1 {
+        font-size: 2.5rem !important;
+        line-height: 1.1 !important;
+    }
+    
+    h2 {
+        font-size: 1.8rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem !important;
+        max-width: 100% !important;
+        padding-right: 1rem !important;
+    }
+
+    /* Hero Section */
+    .hero {
+        padding: 1.5rem 0 !important;
+        height: auto !important;
+        border-bottom: 0.5px solid var(--gray) !important;
+    }
+    
+    .hero-inner {
+        padding: 0 1.5rem !important;
+    }
+
+    /* Creditor Cards - Single Column */
+    .creditors-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1px !important;
+        margin: 1.5rem 0 !important;
+    }
+    
+    .creditor-card {
+        aspect-ratio: unset !important;
+        min-height: auto !important;
+        padding: 1.5rem !important;
+  
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        transform-origin: center;
+        will-change: transform;
+}
+    
+    .creditor-name {
+        font-size: 1.5rem !important;
+        line-height: 1.3 !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .creditor-violations {
+        font-size: 0.9rem !important;
+
+
+
+    }
+
+
+/* For mobile */
+@media (max-width: 768px) {
+
+
+.creditor-card::after {
+    content: "";
+    /* ...existing styles... */
+}    
+    
+    .creditor-harm {
+        font-size: 1.1rem !important;
+        margin-top: 0.5rem !important;
+    }
+
+    /* Critical Details */
+    .creditor-critical-details {
+        margin-bottom: 1rem !important;
+        padding-top: 1rem !important;
+
+
+
+
+    transform: none !important;
+    opacity: 1 !important;
+    height: auto !important;
+    padding: 1rem 0 0 !important;
+}
+
+
+
+    
+    .critical-item {
+        grid-template-columns: 100px 1fr !important;
+        gap: 0.5rem !important;
+        font-size: 0.85rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    /* Timeline */
+    .timeline-container {
+        margin: 2rem 0 !important;
+    }
+    
+    .timeline-item {
+        flex: 0 0 90vw !important;
+        min-height: 180px !important;
+      /*  transition: all 0.4s ease-out; */
+    }
+
+    .timeline-item:hover {
+        transform: scale(1.03);
+        z-index: 10;
+    }
+
+    
+    .timeline-date {
+        font-size: 2rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+    
+    .timeline-content {
+        font-size: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    /* Print Section */
+    .print-section {
+        padding-top: 2rem !important;
+    }
+    
+    .print-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+        padding: 1rem 1.5rem 2rem !important;
+    }
+    
+    .print-card {
+        padding: 1.5rem !important;
+    }
+    
+    .print-card h3 {
+        font-size: 1.3rem !important;
+    }
+
+    /* Audio Control */
+    .audio-control {
+        width: 50px !important;
+        height: 50px !important;
+        bottom: 1.5rem !important;
+        right: 1.5rem !important;
+        font-size: 1.3rem !important;
+    }
+}
+
+
+  /* Tablet Layout (2 Columns) */
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .creditors-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    .creditor-card {
+        padding: 1.75rem !important;
+    }
+    
+    .creditor-name {
+        font-size: 1.6rem !important;
+    }
+    
+    .timeline-item {
+        flex: 0 0 45vw !important;
+    }
+    
+    .print-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+
+
+/*****************************
+  CREDITOR CARD LINKS 
+  (Add this new section)
+*****************************/
+
+.creditor-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.3s ease;
+  margin-bottom: 20px; /* maintains original grid spacing */
+  pointer-events: none !important;
+  cursor: default !important;
+}
+
+.creditor-card-link:hover {
+  transform: none !important;
+}
+
+.creditor-card-link:hover .creditor-card {
+  box-shadow: none !important;
+  border-color: inherit !important;
+  background: var(--red) !important; /* Maintains original red color */
+}
+
+.creditor-card-link:hover .creditor-harm,
+.creditor-card-link:hover .creditor-violations {
+  color: var(--red) !important; /* Keeps original text colors */
+}
+
+
+
+
+
+.creditor-card-link:hover {
+  transform: translateY(-5px);
+}
+
+.creditor-card-link:hover .creditor-card {
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+  border-color: #1976d2; /* or your primary brand color */
+}
+
+/* ======================
+   BACK BUTTON STYLES
+   (Add this anywhere in styles.css)
+   ====================== */
+.back-button {
+  display: inline-block;
+  margin: 0 0 2rem 0;
+  padding: 0.7rem 1.5rem;
+  background: #f3f4f6;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #333;
+  font-weight: 600;
+  font-family: 'Space Grotesk', sans-serif;
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.back-button:hover {
+  background: #e5e7eb;
+  transform: translateX(-4px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.back-button:active {
+  transform: translateX(-2px);
+}
+
+
+
+
+
+
+
+
+
+
+/* Remove all link styling for creditor cards */
+.creditor-card-link {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+.creditor-card-link:hover,
+.creditor-card-link:focus,
+.creditor-card-link:active {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+/* Remove any hover effects if you don't want them */
+.creditor-card-link:hover .creditor-card {
+  transform: none;
+  box-shadow: none;
+  border-color: inherit;
+}
+
+/* For the entire card - ensure no link styling appears */
+.creditor-card a {
+  color: inherit !important;
+  text-decoration: none !important;
+}
